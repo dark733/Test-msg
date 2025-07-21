@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>Secure Chat</title>
+        <!-- External Libraries -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+        <style>
+            :root {
+                --imessage-blue: #007aff;
+                --imessage-light-gray: #e5e5ea;
+                --imessage-dark-gray: #8e8e93;
+                --background-color: #ffffff;
+                --font-family:
+                    -apple-system, BlinkMacSystemFont, "San Francisco",
+                    "Helvetica Neue", Helvetica, Arial, sans-serif;
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: var(--font-family);
+                background-color: #f0f2f5;
+                min-height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0;
+                padding: 10px;
+                overflow: hidden;
+            }
+
+            .container {
+                background: var(--background-color);
+                border-radius: 20px;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+                width: 100%;
+                max-width: min(95vw, 740px);
+                height: min(95vh, 850px);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                border: 1px solid #e5e5ea;
+                position: relative;
+                animation: containerFadeIn 0.8s cubic-bezier(0.2, 0, 0.2, 1);
+            }
+
+            @keyframes containerFadeIn {
+                from {
+                    opacity: 0;
+                    transform: scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            .header {
+                background: #f7f7f7;
+                padding: 18px 24px;
+                text-align: center;
+                position: relative;
+                border-bottom: 1px solid var(--imessage-light-gray);
+                flex-shrink: 0;
+            }
+
+            .header h1 {
+                font-size: 17px;
+                font-weight: 600;
+                color: #1d1d1f;
+            }
+
+            .login-screen {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                flex: 1;
+                padding: 40px;
+                animation: fadeIn 0.5s ease-in-out;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+
+            .login-screen h2 {
+                font-weight: 600;
+                font-size: 24px;
+                margin-bottom: 16px;
+            }
+            .login-screen p {
+                color: var(--imessage-dark-gray);
+                margin-bottom: 32px;
+                max-width: 320px;
+                text-align: center;
+                line-height: 1.5;
+            }
+
+            .login-form {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                max-width: 320px;
+                gap: 16px;
+            }
+
+            .login-form input {
+                padding: 14px 18px;
+                border: 1px solid #dcdcdc;
+                border-radius: 12px;
+                font-size: 16px;
+                font-family: var(--font-family);
+                transition:
+                    border-color 0.3s,
+                    box-shadow 0.3s;
+            }
+
+            .login-form input:focus {
+                outline: none;
+                border-color: var(--imessage-blue);
+                box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+            }
+
+            .login-form button {
+                padding: 14px 18px;
+                background-color: var(--imessage-blue);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+            .login-form button:hover {
+                background-color: #006ce0;
+            }
+
+            .chat-container {
+                display: none;
+                flex-direction: column;
+                flex: 1;
+                min-height: 0;
+                background-color: var(--background-color);
+            }
+
+            .messages {
+                flex: 1;
+                padding: 20px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .message {
+                display: flex;
+                flex-direction: column;
+                max-width: 75%;
+                word-wrap: break-word;
+                animation: messageFadeIn 0.4s ease;
+                position: relative;
+            }
+
+            @keyframes messageFadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .message.own {
+                align-self: flex-end;
+            }
+            .message.other {
+                align-self: flex-start;
+            }
+
+            .message-username {
+                font-size: 12px;
+                color: var(--imessage-dark-gray);
+                margin: 0 10px 4px;
+            }
+
+            .message.own .message-username {
+                display: none;
+            }
+
+            .message-bubble {
+                padding: 10px 16px;
+                border-radius: 20px;
+                line-height: 1.5;
+                font-size: 16px;
+            }
+
+            .message.own .message-bubble {
+                background-color: var(--imessage-blue);
+                color: white;
+            }
+
+            .message.other .message-bubble {
+                background-color: var(--imessage-light-gray);
+                color: black;
+            }
+
+            .message .timestamp {
+                font-size: 11px;
+                color: #ffffff99;
+                position: absolute;
+                bottom: -16px;
+                right: 8px;
+                opacity: 0;
+                transition: opacity 0.3s;
+                text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+            }
+            .message.other .timestamp {
+                color: var(--imessage-dark-gray);
+                left: 8px;
+                right: auto;
+                text-shadow: none;
+            }
+            .message:hover .timestamp {
+                opacity: 1;
+            }
+
+            .system-message {
+                text-align: center;
+                color: var(--imessage-dark-gray);
+                font-size: 13px;
+                margin: 16px auto;
+                padding: 6px 12px;
+                background-color: #f0f0f5;
+                border-radius: 12px;
+            }
+            .user-list {
+                font-size: 13px;
+                color: var(--imessage-dark-gray);
+                text-align: center;
+                padding: 10px;
+            }
+            .typing-indicator {
+                font-size: 13px;
+                color: var(--imessage-dark-gray);
+                text-align: center;
+                padding: 10px;
+                height: 20px; /* Reserve space */
+            }
+
+            .input-area {
+                display: flex;
+                padding: 12px;
+                background: #f7f7f7;
+                border-top: 1px solid var(--imessage-light-gray);
+                align-items: center;
+                gap: 12px;
+            }
+
+            .input-area input[type="text"] {
+                flex: 1;
+                padding: 10px 18px;
+                border: 1px solid var(--imessage-light-gray);
+                border-radius: 20px;
+                font-size: 16px;
+                outline: none;
+                font-family: var(--font-family);
+            }
+
+            .send-button {
+                width: 36px;
+                height: 36px;
+                border: none;
+                border-radius: 50%;
+                background-color: var(--imessage-blue);
+                color: white;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                transition:
+                    transform 0.2s,
+                    background-color 0.2s;
+            }
+            .send-button:hover {
+                transform: scale(1.1);
+            }
+            .send-button:active {
+                transform: scale(0.95);
+                background-color: #0056b3;
+            }
+
+            /* Responsive Adjustments */
+            @media (max-width: 768px) {
+                body {
+                    padding: 0;
+                }
+                .container {
+                    width: 100vw;
+                    height: 100vh;
+                    border-radius: 0;
+                    border: none;
+                    max-width: none;
+                    max-height: none;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1 id="chat-header">Welcome</h1>
+                <div class="user-list" id="userList"></div>
+                <div class="typing-indicator" id="typingIndicator"></div>
+            </div>
+
+            <div class="login-screen" id="loginScreen">
+                <h2>Secure Chat</h2>
+                <p>
+                    Enter a username and a shared secret key to start your
+                    encrypted conversation.
+                </p>
+                <form class="login-form" id="loginForm">
+                    <input
+                        type="text"
+                        id="usernameInput"
+                        placeholder="Username"
+                        required
+                        autocomplete="off"
+                    />
+                    <input
+                        type="password"
+                        id="secretKeyInput"
+                        placeholder="Shared Secret Key"
+                        required
+                    />
+                    <button type="submit">Join Chat</button>
+                </form>
+            </div>
+
+            <div class="chat-container" id="chatContainer">
+                <div class="messages" id="messages"></div>
+                <form class="input-area" id="messageForm">
+                    <input
+                        type="text"
+                        id="messageInput"
+                        placeholder="EF07"
+                        autocomplete="off"
+                    />
+                    <button type="submit" class="send-button">↑</button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            let socket;
+            let currentUser = "";
+            let secretKey = "";
+            let typingTimeout;
+
+            // --- DOM Elements ---
+            const loginForm = document.getElementById("loginForm");
+            const messageForm = document.getElementById("messageForm");
+            const usernameInput = document.getElementById("usernameInput");
+            const secretKeyInput = document.getElementById("secretKeyInput");
+            const messageInput = document.getElementById("messageInput");
+            const loginScreen = document.getElementById("loginScreen");
+            const chatContainer = document.getElementById("chatContainer");
+            const messagesContainer = document.getElementById("messages");
+            const chatHeader = document.getElementById("chat-header");
+            const userList = document.getElementById("userList");
+            const typingIndicator = document.getElementById("typingIndicator");
+
+            // --- Encryption Functions ---
+            const encryptMessage = (text) => {
+                if (!secretKey) return text; // Failsafe
+                return CryptoJS.AES.encrypt(text, secretKey).toString();
+            };
+
+            const decryptMessage = (ciphertext) => {
+                if (!secretKey) return "Error: Missing secret key";
+                try {
+                    const bytes = CryptoJS.AES.decrypt(ciphertext, secretKey);
+                    const originalText = bytes.toString(CryptoJS.enc.Utf8);
+                    // If decryption results in an empty string, it means the key was wrong
+                    if (!originalText) {
+                        return "⚠️ Could not decrypt message (Wrong Key)";
+                    }
+                    return originalText;
+                } catch (e) {
+                    console.error("Decryption error:", e);
+                    return "⚠️ Could not decrypt message";
+                }
+            };
+
+            // --- Initialization and Socket Logic ---
+            const initializeSocket = () => {
+                try {
+                    // This will connect to the server that serves the file.
+                    // Works for both localhost and ngrok.
+                    socket = io(window.location.origin);
+                    setupSocketEvents();
+                } catch (error) {
+                    console.error("Socket connection failed:", error);
+                    alert(
+                        "Could not connect to the server. Please check your connection and try again.",
+                    );
+                }
+            };
+
+            const setupSocketEvents = () => {
+                socket.on("connect", () => {
+                    console.log("Connected to server.");
+                    socket.emit("join", {
+                        username: currentUser,
+                        secretKey: secretKey,
+                    });
+                });
+
+                socket.on("disconnect", () =>
+                    addSystemMessage("Disconnected from server."),
+                );
+
+                socket.on("user joined", (data) => {
+                    addSystemMessage(`${data.username} has joined.`);
+                    updateUserList(data.users);
+                });
+
+                socket.on("user left", (data) => {
+                    addSystemMessage(`${data.username} has left.`);
+                    updateUserList(data.users);
+                });
+
+                socket.on("message", (data) => {
+                    // Only display as "other" if not sent by current user
+                    if (data.username !== currentUser) {
+                        const decryptedContent = decryptMessage(data.content);
+                        displayMessage(
+                            { ...data, content: decryptedContent },
+                            "other",
+                        );
+                    }
+                });
+
+                socket.on("user typing", (data) => {
+                    typingIndicator.textContent = `${data.username} is typing...`;
+                });
+
+                socket.on("stop typing", () => {
+                    typingIndicator.textContent = "";
+                });
+            };
+
+            // --- UI and Event Handlers ---
+            loginForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                currentUser = usernameInput.value.trim();
+                secretKey = secretKeyInput.value.trim();
+
+                if (currentUser && secretKey) {
+                    initializeSocket();
+
+                    // Transition UI
+                    loginScreen.style.display = "none";
+                    chatContainer.style.display = "flex";
+                    chatHeader.textContent = `Juzer's Chatroom`;
+                    messageInput.focus();
+                }
+            });
+
+            messageForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const content = messageInput.value.trim();
+                if (content && socket && socket.connected) {
+                    const encryptedContent = encryptMessage(content);
+                    const messageData = {
+                        content: encryptedContent, // Send encrypted content
+                    };
+                    socket.emit("message", messageData);
+
+                    // Display own message immediately (with original, unencrypted content)
+                    displayMessage(
+                        {
+                            username: currentUser,
+                            content: content,
+                            timestamp: new Date().toISOString(),
+                        },
+                        "own",
+                    );
+                    messageInput.value = "";
+                    socket.emit("stop typing");
+                }
+            });
+
+            messageInput.addEventListener("input", () => {
+                if (socket && socket.connected) {
+                    clearTimeout(typingTimeout);
+                    socket.emit("typing");
+                    typingTimeout = setTimeout(() => {
+                        socket.emit("stop typing");
+                    }, 2000);
+                }
+            });
+
+            const displayMessage = (data, type) => {
+                const messageEl = document.createElement("div");
+                messageEl.classList.add("message", type);
+
+                const time = new Date(data.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                });
+
+                // Sanitize content to prevent HTML injection
+                const sanitizedContent = data.content
+                    .replace(/</g, "<")
+                    .replace(/>/g, ">");
+
+                messageEl.innerHTML = `
+                <div class="message-username">${data.username}</div>
+                <div class="message-bubble">${sanitizedContent}</div>
+                <div class="timestamp">${time}</div>
+            `;
+
+                messagesContainer.appendChild(messageEl);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            };
+
+            const addSystemMessage = (text) => {
+                const systemMessage = document.createElement("div");
+                systemMessage.classList.add("system-message");
+                systemMessage.textContent = text;
+                messagesContainer.appendChild(systemMessage);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            };
+
+            const updateUserList = (users) => {
+                userList.textContent = `Online: ${users.join(", ")}`;
+            };
+        </script>
+    </body>
+</html>
