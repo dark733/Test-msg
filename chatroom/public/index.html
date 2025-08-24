@@ -7,6 +7,7 @@
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
         <title>Secure Chat</title>
+
         <!-- External Libraries -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -17,9 +18,26 @@
                 --imessage-light-gray: #e5e5ea;
                 --imessage-dark-gray: #8e8e93;
                 --background-color: #ffffff;
+                --message-bg: #f0f0f5;
+                --header-bg: #f7f7f7;
+                --input-bg: #f7f7f7;
+                --text-color: #1d1d1f;
+                --border-color: #e5e5ea;
+                --shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
                 --font-family:
                     -apple-system, BlinkMacSystemFont, "San Francisco",
                     "Helvetica Neue", Helvetica, Arial, sans-serif;
+            }
+
+            [data-theme="dark"] {
+                --background-color: #1c1c1e;
+                --message-bg: #2c2c2e;
+                --header-bg: #1c1c1e;
+                --input-bg: #2c2c2e;
+                --text-color: #ffffff;
+                --border-color: #3a3a3c;
+                --imessage-light-gray: #3a3a3c;
+                --shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
             }
 
             * {
@@ -38,19 +56,25 @@
                 margin: 0;
                 padding: 10px;
                 overflow: hidden;
+                color: var(--text-color);
+                transition: all 0.3s ease;
+            }
+
+            [data-theme="dark"] body {
+                background-color: #000000;
             }
 
             .container {
                 background: var(--background-color);
                 border-radius: 20px;
-                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+                box-shadow: var(--shadow);
                 width: 100%;
                 max-width: min(95vw, 740px);
                 height: min(95vh, 850px);
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
-                border: 1px solid #e5e5ea;
+                border: 1px solid var(--border-color);
                 position: relative;
                 animation: containerFadeIn 0.8s cubic-bezier(0.2, 0, 0.2, 1);
             }
@@ -67,18 +91,80 @@
             }
 
             .header {
-                background: #f7f7f7;
+                background: var(--header-bg);
                 padding: 18px 24px;
                 text-align: center;
                 position: relative;
-                border-bottom: 1px solid var(--imessage-light-gray);
+                border-bottom: 1px solid var(--border-color);
                 flex-shrink: 0;
             }
 
             .header h1 {
                 font-size: 17px;
                 font-weight: 600;
-                color: #1d1d1f;
+                color: var(--text-color);
+            }
+
+            .connection-status {
+                display: inline-block;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                margin-left: 8px;
+                background-color: #34c759;
+                animation: pulse 2s infinite;
+            }
+
+            .connection-status.disconnected {
+                background-color: #ff3b30;
+                animation: none;
+            }
+
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.5;
+                }
+            }
+
+            .header-controls {
+                position: absolute;
+                right: 16px;
+                top: 50%;
+                transform: translateY(-50%);
+                display: flex;
+                gap: 8px;
+                align-items: center;
+            }
+
+            .theme-toggle,
+            .exit-session-btn {
+                background: transparent;
+                border: none;
+                border-radius: 50%;
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+                cursor: pointer;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--imessage-dark-gray);
+            }
+
+            .theme-toggle:hover,
+            .exit-session-btn:hover {
+                background: var(--imessage-light-gray);
+                color: var(--text-color);
+            }
+
+            .exit-session-btn:hover {
+                background: #ffeaea;
+                color: #ff3b30;
             }
 
             .login-screen {
@@ -104,7 +190,9 @@
                 font-weight: 600;
                 font-size: 24px;
                 margin-bottom: 16px;
+                color: var(--text-color);
             }
+
             .login-screen p {
                 color: var(--imessage-dark-gray);
                 margin-bottom: 32px;
@@ -123,10 +211,12 @@
 
             .login-form input {
                 padding: 14px 18px;
-                border: 1px solid #dcdcdc;
+                border: 1px solid var(--border-color);
                 border-radius: 12px;
                 font-size: 16px;
                 font-family: var(--font-family);
+                background: var(--background-color);
+                color: var(--text-color);
                 transition:
                     border-color 0.3s,
                     box-shadow 0.3s;
@@ -147,10 +237,47 @@
                 font-size: 16px;
                 font-weight: 500;
                 cursor: pointer;
-                transition: background-color 0.3s;
+                transition:
+                    background-color 0.3s,
+                    transform 0.1s;
             }
+
             .login-form button:hover {
                 background-color: #006ce0;
+            }
+
+            .login-form button:active {
+                transform: scale(0.98);
+            }
+
+            .error-message {
+                background: #ffebee;
+                border: 1px solid #ffcdd2;
+                color: #c62828;
+                padding: 12px;
+                border-radius: 8px;
+                margin-top: 16px;
+                font-size: 14px;
+                animation: shake 0.5s;
+            }
+
+            [data-theme="dark"] .error-message {
+                background: #2d1b1b;
+                border-color: #5f2c2c;
+                color: #ef5350;
+            }
+
+            @keyframes shake {
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+                25% {
+                    transform: translateX(-5px);
+                }
+                75% {
+                    transform: translateX(5px);
+                }
             }
 
             .chat-container {
@@ -159,6 +286,59 @@
                 flex: 1;
                 min-height: 0;
                 background-color: var(--background-color);
+                position: relative;
+            }
+
+            .user-list {
+                font-size: 13px;
+                color: var(--imessage-dark-gray);
+                text-align: center;
+                padding: 8px;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .typing-indicator {
+                font-size: 13px;
+                color: var(--imessage-dark-gray);
+                text-align: center;
+                padding: 8px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .typing-dots {
+                display: inline-flex;
+                gap: 2px;
+            }
+
+            .typing-dots span {
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background-color: var(--imessage-dark-gray);
+                animation: typing 1.4s infinite;
+            }
+
+            .typing-dots span:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+            .typing-dots span:nth-child(3) {
+                animation-delay: 0.4s;
+            }
+
+            @keyframes typing {
+                0%,
+                60%,
+                100% {
+                    transform: translateY(0);
+                    opacity: 0.4;
+                }
+                30% {
+                    transform: translateY(-10px);
+                    opacity: 1;
+                }
             }
 
             .messages {
@@ -168,6 +348,7 @@
                 display: flex;
                 flex-direction: column;
                 gap: 12px;
+                background: var(--background-color);
             }
 
             .message {
@@ -193,6 +374,7 @@
             .message.own {
                 align-self: flex-end;
             }
+
             .message.other {
                 align-self: flex-start;
             }
@@ -212,6 +394,8 @@
                 border-radius: 20px;
                 line-height: 1.5;
                 font-size: 16px;
+                position: relative;
+                cursor: pointer;
             }
 
             .message.own .message-bubble {
@@ -221,7 +405,57 @@
 
             .message.other .message-bubble {
                 background-color: var(--imessage-light-gray);
-                color: black;
+                color: var(--text-color);
+            }
+
+            .message-file {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 16px;
+                background: var(--message-bg);
+                border-radius: 12px;
+                border: 1px solid var(--border-color);
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+
+            .message-file:hover {
+                background: var(--imessage-light-gray);
+            }
+
+            .file-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                background: var(--imessage-blue);
+                color: white;
+            }
+
+            .file-info h4 {
+                font-size: 14px;
+                font-weight: 500;
+                margin-bottom: 2px;
+            }
+
+            .file-info span {
+                font-size: 12px;
+                color: var(--imessage-dark-gray);
+            }
+
+            .message-image {
+                max-width: 250px;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: transform 0.2s;
+            }
+
+            .message-image:hover {
+                transform: scale(1.02);
             }
 
             .message .timestamp {
@@ -234,14 +468,84 @@
                 transition: opacity 0.3s;
                 text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
             }
+
             .message.other .timestamp {
                 color: var(--imessage-dark-gray);
                 left: 8px;
                 right: auto;
                 text-shadow: none;
             }
+
             .message:hover .timestamp {
                 opacity: 1;
+            }
+
+            .message-reactions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+                margin-top: 4px;
+                margin-left: 8px;
+            }
+
+            .message.own .message-reactions {
+                margin-left: 0;
+                margin-right: 8px;
+                justify-content: flex-end;
+            }
+
+            .reaction {
+                background: var(--message-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 2px 6px;
+                font-size: 12px;
+                display: flex;
+                align-items: center;
+                gap: 2px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .reaction:hover {
+                background: var(--imessage-light-gray);
+                transform: scale(1.1);
+            }
+
+            .reaction.active {
+                background: var(--imessage-blue);
+                color: white;
+                border-color: var(--imessage-blue);
+            }
+
+            .reaction-picker {
+                position: absolute;
+                bottom: 100%;
+                background: var(--background-color);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 8px;
+                display: none;
+                flex-wrap: wrap;
+                gap: 4px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                z-index: 10;
+            }
+
+            .reaction-picker.show {
+                display: flex;
+            }
+
+            .reaction-picker span {
+                font-size: 20px;
+                padding: 4px;
+                cursor: pointer;
+                border-radius: 6px;
+                transition: background-color 0.2s;
+            }
+
+            .reaction-picker span:hover {
+                background: var(--imessage-light-gray);
             }
 
             .system-message {
@@ -250,71 +554,191 @@
                 font-size: 13px;
                 margin: 16px auto;
                 padding: 6px 12px;
-                background-color: #f0f0f5;
+                background-color: var(--message-bg);
                 border-radius: 12px;
-            }
-            .user-list {
-                font-size: 13px;
-                color: var(--imessage-dark-gray);
-                text-align: center;
-                padding: 10px;
-            }
-            .typing-indicator {
-                font-size: 13px;
-                color: var(--imessage-dark-gray);
-                text-align: center;
-                padding: 10px;
-                height: 20px; /* Reserve space */
+                max-width: fit-content;
             }
 
             .input-area {
                 display: flex;
                 padding: 12px;
-                background: #f7f7f7;
-                border-top: 1px solid var(--imessage-light-gray);
-                align-items: center;
+                background: var(--input-bg);
+                border-top: 1px solid var(--border-color);
+                align-items: flex-end;
                 gap: 12px;
             }
 
-            .input-area input[type="text"] {
+            .input-controls {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                gap: 8px;
+            }
+
+            .input-controls input[type="text"] {
                 flex: 1;
                 padding: 10px 18px;
-                border: 1px solid var(--imessage-light-gray);
+                border: 1px solid var(--border-color);
                 border-radius: 20px;
                 font-size: 16px;
                 outline: none;
                 font-family: var(--font-family);
+                background: var(--background-color);
+                color: var(--text-color);
+                transition: border-color 0.3s;
             }
 
+            .input-controls input[type="text"]:focus {
+                border-color: var(--imessage-blue);
+            }
+
+            .file-upload-area {
+                display: none;
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 8px 0;
+            }
+
+            .file-upload-preview {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: var(--message-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 8px;
+            }
+
+            .file-upload-preview img {
+                width: 40px;
+                height: 40px;
+                object-fit: cover;
+                border-radius: 4px;
+            }
+
+            .file-upload-info {
+                flex: 1;
+            }
+
+            .file-upload-info h4 {
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .file-upload-info span {
+                font-size: 10px;
+                color: var(--imessage-dark-gray);
+            }
+
+            .remove-file {
+                background: #ff3b30;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                font-size: 12px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .input-buttons {
+                display: flex;
+                align-items: flex-end;
+                gap: 8px;
+            }
+
+            .file-input-btn,
             .send-button {
                 width: 36px;
                 height: 36px;
                 border: none;
                 border-radius: 50%;
-                background-color: var(--imessage-blue);
-                color: white;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-size: 18px;
-                transition:
-                    transform 0.2s,
-                    background-color 0.2s;
+                transition: all 0.2s;
             }
+
+            .file-input-btn {
+                background-color: var(--imessage-light-gray);
+                color: var(--imessage-dark-gray);
+            }
+
+            .file-input-btn:hover {
+                background-color: var(--imessage-dark-gray);
+                color: white;
+            }
+
+            .send-button {
+                background-color: var(--imessage-blue);
+                color: white;
+            }
+
             .send-button:hover {
                 transform: scale(1.1);
             }
+
             .send-button:active {
                 transform: scale(0.95);
                 background-color: #0056b3;
             }
 
-            /* Responsive Adjustments */
-            @media (max-width: 768px) {
-                body {
-                    padding: 0;
-                }
+            .send-button:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+            #fileInput {
+                display: none;
+            }
+
+            /* Image modal */
+            .image-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.9);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+                padding: 20px;
+            }
+
+            .image-modal img {
+                max-width: 90%;
+                max-height: 90%;
+                object-fit: contain;
+                border-radius: 8px;
+            }
+
+            .image-modal-close {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Responsive adjustments */
+            @media (max-width: 600px) {
                 .container {
                     width: 100vw;
                     height: 100vh;
@@ -322,16 +746,134 @@
                     border: none;
                     max-width: none;
                     max-height: none;
+                    box-shadow: none;
                 }
+
+                .header,
+                .login-screen,
+                .chat-container {
+                    padding: 8px !important;
+                }
+
+                .messages {
+                    padding: 8px !important;
+                    font-size: 15px;
+                }
+
+                .login-form,
+                .input-area {
+                    max-width: 100vw;
+                    width: 100vw;
+                }
+
+                .login-form input,
+                .login-form button,
+                .input-controls input[type="text"] {
+                    font-size: 15px;
+                    padding: 10px 12px;
+                }
+
+                .file-input-btn,
+                .send-button {
+                    width: 32px;
+                    height: 32px;
+                    font-size: 16px;
+                }
+
+                .header-controls {
+                    right: 8px;
+                }
+
+                .theme-toggle,
+                .exit-session-btn {
+                    width: 32px;
+                    height: 32px;
+                    font-size: 16px;
+                }
+            }
+
+            @media (max-width: 400px) {
+                .header h1 {
+                    font-size: 14px;
+                }
+
+                .message-bubble {
+                    font-size: 14px;
+                }
+
+                .message {
+                    max-width: 85%;
+                }
+            }
+
+            /* Notification styles */
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--background-color);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 1001;
+                animation: slideIn 0.3s ease;
+                max-width: 300px;
+            }
+
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            .notification h4 {
+                font-size: 14px;
+                font-weight: 600;
+                margin-bottom: 4px;
+                color: var(--text-color);
+            }
+
+            .notification p {
+                font-size: 12px;
+                color: var(--imessage-dark-gray);
             }
         </style>
     </head>
-    <body>
+
+    <body data-theme="light">
         <div class="container">
             <div class="header">
-                <h1 id="chat-header">Welcome</h1>
+                <h1 id="chat-header">
+                    Welcome
+                    <span
+                        class="connection-status"
+                        id="connectionStatus"
+                    ></span>
+                </h1>
                 <div class="user-list" id="userList"></div>
                 <div class="typing-indicator" id="typingIndicator"></div>
+                <div class="header-controls">
+                    <button
+                        id="themeToggle"
+                        class="theme-toggle"
+                        title="Toggle Dark Mode"
+                    >
+                        🌙
+                    </button>
+                    <button
+                        id="exitSessionBtn"
+                        class="exit-session-btn"
+                        title="Exit Session"
+                    >
+                        ×
+                    </button>
+                </div>
             </div>
 
             <div class="login-screen" id="loginScreen">
@@ -347,6 +889,7 @@
                         placeholder="Username"
                         required
                         autocomplete="off"
+                        maxlength="20"
                     />
                     <input
                         type="password"
@@ -356,29 +899,74 @@
                     />
                     <button type="submit">Join Chat</button>
                 </form>
+                <div
+                    id="errorMessage"
+                    class="error-message"
+                    style="display: none"
+                ></div>
             </div>
 
             <div class="chat-container" id="chatContainer">
                 <div class="messages" id="messages"></div>
                 <form class="input-area" id="messageForm">
-                    <input
-                        type="text"
-                        id="messageInput"
-                        placeholder="EF07"
-                        autocomplete="off"
-                    />
-                    <button type="submit" class="send-button">↑</button>
+                    <div class="input-controls">
+                        <input
+                            type="text"
+                            id="messageInput"
+                            placeholder="EF07..."
+                            autocomplete="off"
+                        />
+                        <div class="file-upload-area" id="fileUploadArea"></div>
+                    </div>
+                    <div class="input-buttons">
+                        <input
+                            type="file"
+                            id="fileInput"
+                            accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+                        />
+                        <button
+                            type="button"
+                            class="file-input-btn"
+                            id="fileInputBtn"
+                            title="Upload File"
+                        >
+                            📎
+                        </button>
+                        <button type="submit" class="send-button" id="sendBtn">
+                            ↑
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
 
+        <!-- Image Modal -->
+        <div class="image-modal" id="imageModal">
+            <button class="image-modal-close" id="imageModalClose">×</button>
+            <img id="imageModalContent" src="" alt="Full size image" />
+        </div>
+
+        <!-- Audio for notifications -->
+        <audio id="notificationSound" preload="auto">
+            <source
+                src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmgeBDGH0fPTgjMGHm7A7+OZSR0PVqXh8bllHgg2jdXzzn0vBSl+zPLaizsIGGS57+OdTgwOUarm7blmHgU5k9n1unAiByl8yPDed0ECCFSD1O+sdRIJSI7Y9MF5LQUme8vz1YU2Bypp3O23VwgJL4DN8dqLQAoUXLLn6qdTEwpEneHzvmgfBDWJ1PTQfzEHJHfH8N2QQAoUXrTp66hVFApGn+DyvmgeBDGH0fPTgjMGHm7A7+OZSR0PVqXh8bllHgg2jdXzzn0vBSl+zPLaizsIGGS57+OdTgwOUarm7blmHgU5k9n1unAiByl8yPDed0ECCFSD1O+sdRIJSI7Y9MF5LQUme8vz1YU2Bypp3O23VwgJL4DN8dqLQAoUXLLn6qdTEwpEneHzvmgfBDWJ1PTQfzEHJHfH8N2QQAoUXrTp66hVFApGn+DyvmgeBDGH0fPTgjMGHm7A7+OZSR0PVqXh8bllHgg2jdXzzn0vBSl+zPLaizsIGGS57+OdTgwOUarm7blmHgU5k9n1unAiByl8yPDed0ECCFSD1O+sdRIJSI7Y9MF5LQUme8vz1YU2Bypp3O23VwgJL4DN8dqLQAoUXLLn6qdTEwpEneHzvmgfBDWJ1PTQfzEHJHfH8N2QQAoUXrTp66hVFApGn+DyvmgeBDGH0fPTgjMGHm7A7+OZSR0PVqXh8bllHgg2jdXzzn0vBSl+zPLaizsIGGS57+OdTgwOUarm7blmHgU5k9n1unAiByl8yPDed0ECCFSD1O+sdRIJSI7Y9MF5LQUme8vz1YU2Bypp3O23VwgJL4DN8dqLQAoUXLLn6qdTEwpEneHzvmgfBDWJ1PTQfzEHJHfH8N2QQAoUXrTp66hVFApGn+DyvmgeBDGH0fPTgjMGHm7A7+OZSR0PVqXh8bllHgg2jdXzzn0vBSl+zPLaizsIGGS57+OdTgwOUarm7blmHgU5k9n1unAiByl8yPDed0ECCFSD1O+sdRIJSI7Y9MF5LQUme8vz1YU2Bypp3O23VwgJL4DN8dqLQAoUXLLn6qdTEwpEneHzvmgfBDWJ1PTQfzEHJHfH8N2QQAoUXrTp66hVFApGn+DyvmgeBDGH0fPTgjMGHm7A7+OZSR0PVqXh8bllHgg2jdXzzn0vBSl+zPLaizsIGGS57+OdTgwOUarm7blmHgU5k9n1unAiByl8yPDed0ECCFSD1O+sdRIJSI7Y9MF5LQUme8vz1YU2Bypp3O23VwgJL4DN8dqLQAoUXLLn6qdTEwpEneHzvmgfBDWJ1PTQfzEHJHfH8N2QQAoUXrTp66hVFApGn+DyvmgeBDGH0fPTgjMGHm7A7+OZSR0PVqXh8bllHgg2jdXzzn0vBSl+zPLaizsIGGS57+OdTgwOUarm7blmHgU5k9n1unAiByl8yPDed0ECCFSD1O+sdRIJSI7Y9MF5LQUme8vz1YU2Bypp3O23VwgJL4DN8dqLQAoUXLLn6qdTEwpEneHzvmgfBDWJ1PTQfzEHJHfH8N2QQAoUXrTp66hVFApGn+DyvmgeBDGH0fPTgjMGHm7A7+OZSR0PVqXh8bllHgg2jdXzzn0vBSl+zPLaizsIGGS57+OdTgwOUarm7blmHgU5k9n1unAiByl8yPDed0ECCFSD1O+sdRIJSI7Y9MF5LQUme8vz1YU2Bypp3O23VwgJL4DN8dqLQAoUXLLn6qdTEwpEneHzvmgfBDWJ1PTQfzEHJHfH8N2QQAoUXrTp66hVFApGn+Dyvmg"
+            />
+        </audio>
+
         <script>
+            // Global variables
             let socket;
             let currentUser = "";
             let secretKey = "";
+            let currentRoom = "";
             let typingTimeout;
+            let currentTheme = localStorage.getItem("theme") || "light";
+            let soundEnabled = localStorage.getItem("soundEnabled") !== "false";
+            let pendingFiles = [];
+            let messageReactions = new Map();
+            let lastActivity = Date.now();
 
-            // --- DOM Elements ---
+            // DOM Elements
             const loginForm = document.getElementById("loginForm");
             const messageForm = document.getElementById("messageForm");
             const usernameInput = document.getElementById("usernameInput");
@@ -390,19 +978,42 @@
             const chatHeader = document.getElementById("chat-header");
             const userList = document.getElementById("userList");
             const typingIndicator = document.getElementById("typingIndicator");
+            const exitSessionBtn = document.getElementById("exitSessionBtn");
+            const themeToggle = document.getElementById("themeToggle");
+            const connectionStatus =
+                document.getElementById("connectionStatus");
+            const errorMessage = document.getElementById("errorMessage");
+            const fileInput = document.getElementById("fileInput");
+            const fileInputBtn = document.getElementById("fileInputBtn");
+            const fileUploadArea = document.getElementById("fileUploadArea");
+            const sendBtn = document.getElementById("sendBtn");
+            const notificationSound =
+                document.getElementById("notificationSound");
+            const imageModal = document.getElementById("imageModal");
+            const imageModalContent =
+                document.getElementById("imageModalContent");
+            const imageModalClose = document.getElementById("imageModalClose");
 
-            // --- Encryption Functions ---
+            // Initialize theme
+            document.body.setAttribute("data-theme", currentTheme);
+            themeToggle.textContent = currentTheme === "dark" ? "☀️" : "🌙";
+
+            // Encryption Functions
             const encryptMessage = (text) => {
-                if (!secretKey) return text; // Failsafe
-                return CryptoJS.AES.encrypt(text, secretKey).toString();
+                if (!secretKey) return text;
+                try {
+                    return CryptoJS.AES.encrypt(text, secretKey).toString();
+                } catch (error) {
+                    console.error("Encryption error:", error);
+                    return text;
+                }
             };
 
             const decryptMessage = (ciphertext) => {
-                if (!secretKey) return "Error: Missing secret key";
+                if (!secretKey) return "⚠️ Missing secret key";
                 try {
                     const bytes = CryptoJS.AES.decrypt(ciphertext, secretKey);
                     const originalText = bytes.toString(CryptoJS.enc.Utf8);
-                    // If decryption results in an empty string, it means the key was wrong
                     if (!originalText) {
                         return "⚠️ Could not decrypt message (Wrong Key)";
                     }
@@ -413,16 +1024,90 @@
                 }
             };
 
-            // --- Initialization and Socket Logic ---
+            // Utility Functions
+            const showError = (message) => {
+                errorMessage.textContent = message;
+                errorMessage.style.display = "block";
+                setTimeout(() => {
+                    errorMessage.style.display = "none";
+                }, 5000);
+            };
+
+            const updateConnectionStatus = (connected) => {
+                connectionStatus.classList.toggle("disconnected", !connected);
+            };
+
+            const playNotificationSound = () => {
+                if (soundEnabled && notificationSound) {
+                    notificationSound.currentTime = 0;
+                    notificationSound
+                        .play()
+                        .catch((e) =>
+                            console.log("Could not play notification sound"),
+                        );
+                }
+            };
+
+            const showNotification = (title, body) => {
+                if (
+                    "Notification" in window &&
+                    Notification.permission === "granted"
+                ) {
+                    new Notification(title, { body, icon: "/favicon.ico" });
+                } else {
+                    const notification = document.createElement("div");
+                    notification.className = "notification";
+                    notification.innerHTML = `<h4>${title}</h4><p>${body}</p>`;
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 4000);
+                }
+            };
+
+            const formatFileSize = (bytes) => {
+                const sizes = ["Bytes", "KB", "MB", "GB"];
+                if (bytes === 0) return "0 Bytes";
+                const i = Math.floor(Math.log(bytes) / Math.log(1024));
+                return (
+                    Math.round((bytes / Math.pow(1024, i)) * 100) / 100 +
+                    " " +
+                    sizes[i]
+                );
+            };
+
+            const getFileIcon = (mimetype) => {
+                if (mimetype.startsWith("image/")) return "🖼️";
+                if (mimetype.startsWith("video/")) return "🎥";
+                if (mimetype.startsWith("audio/")) return "🎵";
+                if (mimetype.includes("pdf")) return "📄";
+                if (mimetype.includes("doc") || mimetype.includes("txt"))
+                    return "📝";
+                return "📎";
+            };
+
+            const sanitizeHtml = (text) => {
+                const div = document.createElement("div");
+                div.textContent = text;
+                return div.innerHTML;
+            };
+
+            const updateActivity = () => {
+                lastActivity = Date.now();
+                if (socket && socket.connected) {
+                    socket.emit("user_activity");
+                }
+            };
+
+            // Socket Functions
             const initializeSocket = () => {
                 try {
-                    // This will connect to the server that serves the file.
-                    // Works for both localhost and ngrok.
-                    socket = io(window.location.origin);
+                    socket = io(window.location.origin, {
+                        timeout: 5000,
+                        transports: ["websocket", "polling"],
+                    });
                     setupSocketEvents();
                 } catch (error) {
                     console.error("Socket connection failed:", error);
-                    alert(
+                    showError(
                         "Could not connect to the server. Please check your connection and try again.",
                     );
                 }
@@ -431,119 +1116,180 @@
             const setupSocketEvents = () => {
                 socket.on("connect", () => {
                     console.log("Connected to server.");
+                    updateConnectionStatus(true);
                     socket.emit("join", {
                         username: currentUser,
                         secretKey: secretKey,
                     });
                 });
 
-                socket.on("disconnect", () =>
-                    addSystemMessage("Disconnected from server."),
-                );
-
-                socket.on("user joined", (data) => {
-                    addSystemMessage(`${data.username} has joined.`);
-                    updateUserList(data.users);
+                socket.on("disconnect", (reason) => {
+                    console.log("Disconnected from server:", reason);
+                    updateConnectionStatus(false);
+                    addSystemMessage(
+                        "Disconnected from server. Trying to reconnect...",
+                    );
                 });
 
-                socket.on("user left", (data) => {
+                socket.on("connect_error", (error) => {
+                    console.error("Connection error:", error);
+                    updateConnectionStatus(false);
+                    showError("Connection error. Please try again.");
+                });
+
+                socket.on("error", (data) => {
+                    console.error("Server error:", data);
+                    showError(data.message || "An error occurred");
+                });
+
+                socket.on("join_success", (data) => {
+                    currentRoom = data.room;
+                    chatHeader.innerHTML = `Juzer's Chatroom <span class="connection-status" id="connectionStatus"></span>`;
+                    updateUserList(data.users);
+                    messageInput.focus();
+                });
+
+                socket.on("message_history", (messages) => {
+                    messages.forEach((msg) => {
+                        const decryptedContent =
+                            msg.username === currentUser
+                                ? msg.content
+                                : decryptMessage(msg.content);
+                        displayMessage(
+                            {
+                                ...msg,
+                                content: decryptedContent,
+                            },
+                            msg.username === currentUser ? "own" : "other",
+                        );
+                    });
+                });
+
+                socket.on("user_joined", (data) => {
+                    addSystemMessage(`${data.username} has joined.`);
+                    updateUserList(data.users);
+                    playNotificationSound();
+                });
+
+                socket.on("user_left", (data) => {
                     addSystemMessage(`${data.username} has left.`);
                     updateUserList(data.users);
                 });
 
                 socket.on("message", (data) => {
-                    // Only display as "other" if not sent by current user
                     if (data.username !== currentUser) {
                         const decryptedContent = decryptMessage(data.content);
                         displayMessage(
-                            { ...data, content: decryptedContent },
+                            {
+                                ...data,
+                                content: decryptedContent,
+                            },
                             "other",
                         );
+                        playNotificationSound();
+
+                        if (document.hidden) {
+                            showNotification(
+                                `${data.username}`,
+                                decryptedContent.substring(0, 100),
+                            );
+                        }
                     }
                 });
 
-                socket.on("user typing", (data) => {
-                    typingIndicator.textContent = `${data.username} is typing...`;
+                socket.on("user_typing", (data) => {
+                    if (data.username !== currentUser) {
+                        showTypingIndicator(data.username);
+                    }
                 });
 
-                socket.on("stop typing", () => {
-                    typingIndicator.textContent = "";
+                socket.on("stop_typing", (data) => {
+                    if (data.username !== currentUser) {
+                        hideTypingIndicator();
+                    }
+                });
+
+                socket.on("reaction_update", (data) => {
+                    updateMessageReactions(data.messageId, data.reactions);
                 });
             };
 
-            // --- UI and Event Handlers ---
-            loginForm.addEventListener("submit", (e) => {
-                e.preventDefault();
-                currentUser = usernameInput.value.trim();
-                secretKey = secretKeyInput.value.trim();
+            // Message Functions
+            const sendMessage = (content, type = "text") => {
+                if (!content || !socket || !socket.connected) return;
 
-                if (currentUser && secretKey) {
-                    initializeSocket();
+                updateActivity();
+                const encryptedContent = encryptMessage(content);
+                const messageData = {
+                    content: encryptedContent,
+                    type: type,
+                };
 
-                    // Transition UI
-                    loginScreen.style.display = "none";
-                    chatContainer.style.display = "flex";
-                    chatHeader.textContent = `Juzer's Chatroom`;
-                    messageInput.focus();
-                }
-            });
-
-            messageForm.addEventListener("submit", (e) => {
-                e.preventDefault();
-                const content = messageInput.value.trim();
-                if (content && socket && socket.connected) {
-                    const encryptedContent = encryptMessage(content);
-                    const messageData = {
-                        content: encryptedContent, // Send encrypted content
-                    };
-                    socket.emit("message", messageData);
-
-                    // Display own message immediately (with original, unencrypted content)
-                    displayMessage(
-                        {
-                            username: currentUser,
-                            content: content,
-                            timestamp: new Date().toISOString(),
-                        },
-                        "own",
-                    );
-                    messageInput.value = "";
-                    socket.emit("stop typing");
-                }
-            });
-
-            messageInput.addEventListener("input", () => {
-                if (socket && socket.connected) {
-                    clearTimeout(typingTimeout);
-                    socket.emit("typing");
-                    typingTimeout = setTimeout(() => {
-                        socket.emit("stop typing");
-                    }, 2000);
-                }
-            });
+                socket.emit("message", messageData);
+                socket.emit("stop_typing");
+            };
 
             const displayMessage = (data, type) => {
                 const messageEl = document.createElement("div");
                 messageEl.classList.add("message", type);
+                messageEl.setAttribute("data-message-id", data.id);
 
                 const time = new Date(data.timestamp).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
                 });
 
-                // Sanitize content to prevent HTML injection
-                const sanitizedContent = data.content
-                    .replace(/</g, "<")
-                    .replace(/>/g, ">");
+                const username =
+                    type === "own"
+                        ? ""
+                        : `<div class="message-username">${sanitizeHtml(data.username)}</div>`;
+                let messageContent = "";
+
+                if (data.type === "file") {
+                    const fileData = JSON.parse(data.content);
+                    if (fileData.mimetype.startsWith("image/")) {
+                        messageContent = `<img src="${fileData.url}" class="message-image" alt="${sanitizeHtml(fileData.originalname)}" onclick="openImageModal('${fileData.url}')">`;
+                    } else {
+                        messageContent = `
+                        <div class="message-file" onclick="window.open('${fileData.url}', '_blank')">
+                            <div class="file-icon">${getFileIcon(fileData.mimetype)}</div>
+                            <div class="file-info">
+                                <h4>${sanitizeHtml(fileData.originalname)}</h4>
+                                <span>${formatFileSize(fileData.size)}</span>
+                            </div>
+                        </div>`;
+                    }
+                } else {
+                    messageContent = `<div class="message-bubble">${sanitizeHtml(data.content)}</div>`;
+                }
 
                 messageEl.innerHTML = `
-                <div class="message-username">${data.username}</div>
-                <div class="message-bubble">${sanitizedContent}</div>
+                ${username}
+                ${messageContent}
                 <div class="timestamp">${time}</div>
+                <div class="reaction-picker" id="reaction-picker-${data.id}">
+                    <span onclick="addReaction('${data.id}', '❤️')">❤️</span>
+                    <span onclick="addReaction('${data.id}', '😂')">😂</span>
+                    <span onclick="addReaction('${data.id}', '👍')">👍</span>
+                    <span onclick="addReaction('${data.id}', '😮')">😮</span>
+                    <span onclick="addReaction('${data.id}', '😢')">😢</span>
+                    <span onclick="addReaction('${data.id}', '😡')">😡</span>
+                </div>
+                <div class="message-reactions" id="reactions-${data.id}"></div>
             `;
+
+                // Add reaction on double tap/click
+                messageEl.addEventListener("dblclick", () => {
+                    toggleReactionPicker(data.id);
+                });
 
                 messagesContainer.appendChild(messageEl);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                // Update reactions if they exist
+                if (data.reactions) {
+                    updateMessageReactions(data.id, data.reactions);
+                }
             };
 
             const addSystemMessage = (text) => {
@@ -555,8 +1301,424 @@
             };
 
             const updateUserList = (users) => {
-                userList.textContent = `Online: ${users.join(", ")}`;
+                if (users && users.length > 0) {
+                    const userNames = users.map((user) =>
+                        typeof user === "string" ? user : user.username,
+                    );
+                    userList.textContent = `Online: ${userNames.join(", ")}`;
+                } else {
+                    userList.textContent = "";
+                }
             };
+
+            const showTypingIndicator = (username) => {
+                typingIndicator.innerHTML = `${sanitizeHtml(username)} is typing <span class="typing-dots"><span></span><span></span><span></span></span>`;
+            };
+
+            const hideTypingIndicator = () => {
+                typingIndicator.textContent = "";
+            };
+
+            // File Upload Functions
+            const handleFileSelect = (files) => {
+                Array.from(files).forEach((file) => {
+                    if (file.size > 10 * 1024 * 1024) {
+                        showError(
+                            `File "${file.name}" is too large. Maximum size is 10MB.`,
+                        );
+                        return;
+                    }
+
+                    pendingFiles.push(file);
+                    displayFilePreview(file);
+                });
+
+                fileUploadArea.style.display =
+                    pendingFiles.length > 0 ? "flex" : "none";
+                updateSendButton();
+            };
+
+            const displayFilePreview = (file) => {
+                const preview = document.createElement("div");
+                preview.className = "file-upload-preview";
+                preview.setAttribute("data-filename", file.name);
+
+                let filePreview = `<div class="file-icon">${getFileIcon(file.type)}</div>`;
+
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img =
+                            preview.querySelector("img") ||
+                            document.createElement("img");
+                        img.src = e.target.result;
+                        if (!preview.querySelector("img")) {
+                            preview.insertBefore(img, preview.firstChild);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                    filePreview =
+                        '<img style="width:40px;height:40px;object-fit:cover;border-radius:4px;">';
+                }
+
+                preview.innerHTML = `
+                ${filePreview}
+                <div class="file-upload-info">
+                    <h4>${sanitizeHtml(file.name)}</h4>
+                    <span>${formatFileSize(file.size)}</span>
+                </div>
+                <button class="remove-file" onclick="removeFile('${file.name}')">×</button>
+            `;
+
+                fileUploadArea.appendChild(preview);
+            };
+
+            const removeFile = (filename) => {
+                pendingFiles = pendingFiles.filter(
+                    (file) => file.name !== filename,
+                );
+                const preview = fileUploadArea.querySelector(
+                    `[data-filename="${filename}"]`,
+                );
+                if (preview) preview.remove();
+
+                fileUploadArea.style.display =
+                    pendingFiles.length > 0 ? "flex" : "none";
+                updateSendButton();
+            };
+
+            const uploadFile = async (file) => {
+                const formData = new FormData();
+                formData.append("file", file);
+
+                try {
+                    const response = await fetch("/upload", {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`,
+                        );
+                    }
+
+                    const fileData = await response.json();
+                    return fileData;
+                } catch (error) {
+                    console.error("File upload error:", error);
+                    showError(
+                        `Failed to upload "${file.name}". Please try again.`,
+                    );
+                    return null;
+                }
+            };
+
+            const sendFiles = async () => {
+                for (const file of pendingFiles) {
+                    const fileData = await uploadFile(file);
+                    if (fileData) {
+                        sendMessage(JSON.stringify(fileData), "file");
+                    }
+                }
+
+                pendingFiles = [];
+                fileUploadArea.innerHTML = "";
+                fileUploadArea.style.display = "none";
+                updateSendButton();
+            };
+
+            const updateSendButton = () => {
+                const hasContent =
+                    messageInput.value.trim() || pendingFiles.length > 0;
+                sendBtn.disabled = !hasContent;
+            };
+
+            // Reaction Functions
+            const toggleReactionPicker = (messageId) => {
+                const picker = document.getElementById(
+                    `reaction-picker-${messageId}`,
+                );
+                if (picker) {
+                    const isShown = picker.classList.contains("show");
+
+                    // Hide all other pickers
+                    document
+                        .querySelectorAll(".reaction-picker.show")
+                        .forEach((p) => {
+                            p.classList.remove("show");
+                        });
+
+                    if (!isShown) {
+                        picker.classList.add("show");
+                        setTimeout(() => picker.classList.remove("show"), 3000);
+                    }
+                }
+            };
+
+            const addReaction = (messageId, emoji) => {
+                if (socket && socket.connected) {
+                    socket.emit("reaction", {
+                        messageId: messageId,
+                        emoji: emoji,
+                    });
+                }
+
+                // Hide reaction picker
+                const picker = document.getElementById(
+                    `reaction-picker-${messageId}`,
+                );
+                if (picker) picker.classList.remove("show");
+            };
+
+            const updateMessageReactions = (messageId, reactions) => {
+                const reactionsContainer = document.getElementById(
+                    `reactions-${messageId}`,
+                );
+                if (!reactionsContainer) return;
+
+                reactionsContainer.innerHTML = "";
+
+                Object.entries(reactions).forEach(([emoji, users]) => {
+                    if (users.length > 0) {
+                        const reaction = document.createElement("div");
+                        reaction.className = "reaction";
+                        if (users.includes(currentUser)) {
+                            reaction.classList.add("active");
+                        }
+                        reaction.innerHTML = `${emoji} ${users.length}`;
+                        reaction.onclick = () => addReaction(messageId, emoji);
+                        reactionsContainer.appendChild(reaction);
+                    }
+                });
+            };
+
+            // Theme Functions
+            const toggleTheme = () => {
+                currentTheme = currentTheme === "light" ? "dark" : "light";
+                document.body.setAttribute("data-theme", currentTheme);
+                themeToggle.textContent = currentTheme === "dark" ? "☀️" : "🌙";
+                localStorage.setItem("theme", currentTheme);
+            };
+
+            // Image Modal Functions
+            const openImageModal = (src) => {
+                imageModalContent.src = src;
+                imageModal.style.display = "flex";
+                document.body.style.overflow = "hidden";
+            };
+
+            const closeImageModal = () => {
+                imageModal.style.display = "none";
+                document.body.style.overflow = "auto";
+            };
+
+            // Event Listeners
+            loginForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                currentUser = usernameInput.value.trim();
+                secretKey = secretKeyInput.value.trim();
+
+                if (!currentUser || !secretKey) {
+                    showError("Please enter both username and secret key");
+                    return;
+                }
+
+                if (currentUser.length > 20) {
+                    showError("Username too long (max 20 characters)");
+                    return;
+                }
+
+                errorMessage.style.display = "none";
+                initializeSocket();
+
+                // Transition UI
+                loginScreen.style.display = "none";
+                chatContainer.style.display = "flex";
+                messageInput.focus();
+            });
+
+            messageForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                updateActivity();
+
+                if (pendingFiles.length > 0) {
+                    await sendFiles();
+                }
+
+                const content = messageInput.value.trim();
+                if (content && socket && socket.connected) {
+                    sendMessage(content);
+                    messageInput.value = "";
+                    updateSendButton();
+                }
+            });
+
+            messageInput.addEventListener("input", () => {
+                updateSendButton();
+
+                if (socket && socket.connected) {
+                    clearTimeout(typingTimeout);
+                    socket.emit("typing");
+                    typingTimeout = setTimeout(() => {
+                        socket.emit("stop_typing");
+                    }, 2000);
+                }
+            });
+
+            fileInput.addEventListener("change", (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileSelect(e.target.files);
+                }
+            });
+
+            fileInputBtn.addEventListener("click", () => {
+                fileInput.click();
+            });
+
+            themeToggle.addEventListener("click", toggleTheme);
+
+            exitSessionBtn.addEventListener("click", () => {
+                if (socket && socket.connected) {
+                    socket.disconnect();
+                }
+                // Try to close the tab
+                window.open("", "_self", "");
+                window.close();
+                // Fallback if close fails
+                setTimeout(() => {
+                    window.location.href = "about:blank";
+                }, 500);
+            });
+
+            imageModalClose.addEventListener("click", closeImageModal);
+            imageModal.addEventListener("click", (e) => {
+                if (e.target === imageModal) {
+                    closeImageModal();
+                }
+            });
+
+            // Drag and drop file upload
+            let dragCounter = 0;
+
+            messagesContainer.addEventListener("dragenter", (e) => {
+                e.preventDefault();
+                dragCounter++;
+                messagesContainer.style.backgroundColor =
+                    "var(--imessage-light-gray)";
+            });
+
+            messagesContainer.addEventListener("dragleave", (e) => {
+                e.preventDefault();
+                dragCounter--;
+                if (dragCounter === 0) {
+                    messagesContainer.style.backgroundColor = "";
+                }
+            });
+
+            messagesContainer.addEventListener("dragover", (e) => {
+                e.preventDefault();
+            });
+
+            messagesContainer.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dragCounter = 0;
+                messagesContainer.style.backgroundColor = "";
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelect(files);
+                }
+            });
+
+            // Activity tracking
+            ["click", "keypress", "mousemove", "touchstart"].forEach(
+                (event) => {
+                    document.addEventListener(event, updateActivity, {
+                        passive: true,
+                    });
+                },
+            );
+
+            // Handle page visibility change
+            document.addEventListener("visibilitychange", () => {
+                if (!document.hidden && socket && socket.connected) {
+                    updateActivity();
+                }
+            });
+
+            // Request notification permission
+            if (
+                "Notification" in window &&
+                Notification.permission === "default"
+            ) {
+                Notification.requestPermission();
+            }
+
+            // Keyboard shortcuts
+            document.addEventListener("keydown", (e) => {
+                // Escape to close modals
+                if (e.key === "Escape") {
+                    closeImageModal();
+                    document
+                        .querySelectorAll(".reaction-picker.show")
+                        .forEach((p) => {
+                            p.classList.remove("show");
+                        });
+                }
+
+                // Ctrl/Cmd + Enter to send message
+                if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                    if (messageInput.value.trim() || pendingFiles.length > 0) {
+                        messageForm.dispatchEvent(new Event("submit"));
+                    }
+                }
+            });
+
+            // Initialize UI
+            updateSendButton();
+
+            // Focus username input on load
+            if (usernameInput) {
+                usernameInput.focus();
+            }
+
+            // Service Worker for offline support (if needed)
+            if ("serviceWorker" in navigator) {
+                window.addEventListener("load", () => {
+                    // Register service worker if you create one
+                });
+            }
+
+            // Prevent zoom on iOS
+            document.addEventListener(
+                "touchmove",
+                (e) => {
+                    if (e.scale !== 1) {
+                        e.preventDefault();
+                    }
+                },
+                { passive: false },
+            );
+
+            // Handle online/offline status
+            window.addEventListener("online", () => {
+                if (socket && !socket.connected) {
+                    socket.connect();
+                }
+            });
+
+            window.addEventListener("offline", () => {
+                updateConnectionStatus(false);
+                addSystemMessage("Connection lost. You are now offline.");
+            });
+
+            // Global functions for onclick handlers
+            window.openImageModal = openImageModal;
+            window.addReaction = addReaction;
+            window.removeFile = removeFile;
+
+            console.log("🚀 Enhanced Chatroom initialized successfully!");
         </script>
     </body>
 </html>
