@@ -27,6 +27,10 @@
                 --font-family:
                     -apple-system, BlinkMacSystemFont, "San Francisco",
                     "Helvetica Neue", Helvetica, Arial, sans-serif;
+                --privacy-alert: #ff3b30;
+                --warning-bg: #fff3cd;
+                --warning-border: #ffeaa7;
+                --warning-text: #856404;
             }
 
             [data-theme="dark"] {
@@ -38,6 +42,9 @@
                 --border-color: #3a3a3c;
                 --imessage-light-gray: #3a3a3c;
                 --shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+                --warning-bg: #3a2a1a;
+                --warning-border: #6b5b00;
+                --warning-text: #ffeb3b;
             }
 
             * {
@@ -48,7 +55,7 @@
 
             body {
                 font-family: var(--font-family);
-                background-color: #f0f2f5;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 min-height: 100vh;
                 display: flex;
                 justify-content: center;
@@ -58,10 +65,14 @@
                 overflow: hidden;
                 color: var(--text-color);
                 transition: all 0.3s ease;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
             }
 
             [data-theme="dark"] body {
-                background-color: #000000;
+                background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
             }
 
             .container {
@@ -77,6 +88,7 @@
                 border: 1px solid var(--border-color);
                 position: relative;
                 animation: containerFadeIn 0.8s cubic-bezier(0.2, 0, 0.2, 1);
+                backdrop-filter: blur(10px);
             }
 
             @keyframes containerFadeIn {
@@ -97,6 +109,7 @@
                 position: relative;
                 border-bottom: 1px solid var(--border-color);
                 flex-shrink: 0;
+                backdrop-filter: blur(10px);
             }
 
             .header h1 {
@@ -116,7 +129,7 @@
             }
 
             .connection-status.disconnected {
-                background-color: #ff3b30;
+                background-color: var(--privacy-alert);
                 animation: none;
             }
 
@@ -160,11 +173,12 @@
             .exit-session-btn:hover {
                 background: var(--imessage-light-gray);
                 color: var(--text-color);
+                transform: scale(1.1);
             }
 
             .exit-session-btn:hover {
                 background: #ffeaea;
-                color: #ff3b30;
+                color: var(--privacy-alert);
             }
 
             .login-screen {
@@ -180,91 +194,102 @@
             @keyframes fadeIn {
                 from {
                     opacity: 0;
+                    transform: translateY(20px);
                 }
                 to {
                     opacity: 1;
+                    transform: translateY(0);
                 }
             }
 
             .login-screen h2 {
                 font-weight: 600;
-                font-size: 24px;
+                font-size: 28px;
                 margin-bottom: 16px;
                 color: var(--text-color);
+                text-align: center;
             }
 
             .login-screen p {
                 color: var(--imessage-dark-gray);
                 margin-bottom: 32px;
-                max-width: 320px;
+                max-width: 400px;
                 text-align: center;
-                line-height: 1.5;
+                line-height: 1.6;
+                font-size: 16px;
             }
 
             .login-form {
                 display: flex;
                 flex-direction: column;
                 width: 100%;
-                max-width: 320px;
-                gap: 16px;
+                max-width: 350px;
+                gap: 20px;
             }
 
             .login-form input {
-                padding: 14px 18px;
-                border: 1px solid var(--border-color);
-                border-radius: 12px;
+                padding: 16px 20px;
+                border: 2px solid var(--border-color);
+                border-radius: 15px;
                 font-size: 16px;
                 font-family: var(--font-family);
                 background: var(--background-color);
                 color: var(--text-color);
-                transition:
-                    border-color 0.3s,
-                    box-shadow 0.3s;
+                transition: all 0.3s ease;
             }
 
             .login-form input:focus {
                 outline: none;
                 border-color: var(--imessage-blue);
-                box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+                box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15);
+                transform: translateY(-2px);
             }
 
             .login-form button {
-                padding: 14px 18px;
-                background-color: var(--imessage-blue);
+                padding: 16px 20px;
+                background: linear-gradient(
+                    135deg,
+                    var(--imessage-blue) 0%,
+                    #0056b3 100%
+                );
                 color: white;
                 border: none;
-                border-radius: 12px;
+                border-radius: 15px;
                 font-size: 16px;
-                font-weight: 500;
+                font-weight: 600;
                 cursor: pointer;
-                transition:
-                    background-color 0.3s,
-                    transform 0.1s;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
             }
 
             .login-form button:hover {
-                background-color: #006ce0;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 122, 255, 0.6);
             }
 
             .login-form button:active {
-                transform: scale(0.98);
+                transform: translateY(0px);
             }
 
-            .error-message {
-                background: #ffebee;
-                border: 1px solid #ffcdd2;
-                color: #c62828;
-                padding: 12px;
-                border-radius: 8px;
+            .error-message,
+            .privacy-alert {
+                background: var(--warning-bg);
+                border: 2px solid var(--warning-border);
+                color: var(--warning-text);
+                padding: 15px;
+                border-radius: 12px;
                 margin-top: 16px;
                 font-size: 14px;
                 animation: shake 0.5s;
+                text-align: center;
+                font-weight: 500;
             }
 
-            [data-theme="dark"] .error-message {
-                background: #2d1b1b;
-                border-color: #5f2c2c;
-                color: #ef5350;
+            .privacy-alert {
+                background: rgba(255, 59, 48, 0.1);
+                border-color: var(--privacy-alert);
+                color: var(--privacy-alert);
+                animation: privacyAlert 0.6s ease;
             }
 
             @keyframes shake {
@@ -273,10 +298,20 @@
                     transform: translateX(0);
                 }
                 25% {
-                    transform: translateX(-5px);
+                    transform: translateX(-8px);
                 }
                 75% {
-                    transform: translateX(5px);
+                    transform: translateX(8px);
+                }
+            }
+
+            @keyframes privacyAlert {
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
                 }
             }
 
@@ -293,8 +328,9 @@
                 font-size: 13px;
                 color: var(--imessage-dark-gray);
                 text-align: center;
-                padding: 8px;
+                padding: 10px;
                 border-bottom: 1px solid var(--border-color);
+                font-weight: 500;
             }
 
             .typing-indicator {
@@ -302,20 +338,22 @@
                 color: var(--imessage-dark-gray);
                 text-align: center;
                 padding: 8px;
-                height: 32px;
+                height: 35px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                font-style: italic;
             }
 
             .typing-dots {
                 display: inline-flex;
-                gap: 2px;
+                gap: 3px;
+                margin-left: 5px;
             }
 
             .typing-dots span {
-                width: 4px;
-                height: 4px;
+                width: 6px;
+                height: 6px;
                 border-radius: 50%;
                 background-color: var(--imessage-dark-gray);
                 animation: typing 1.4s infinite;
@@ -336,7 +374,7 @@
                     opacity: 0.4;
                 }
                 30% {
-                    transform: translateY(-10px);
+                    transform: translateY(-8px);
                     opacity: 1;
                 }
             }
@@ -347,8 +385,9 @@
                 overflow-y: auto;
                 display: flex;
                 flex-direction: column;
-                gap: 12px;
+                gap: 15px;
                 background: var(--background-color);
+                scroll-behavior: smooth;
             }
 
             .message {
@@ -356,33 +395,37 @@
                 flex-direction: column;
                 max-width: 75%;
                 word-wrap: break-word;
-                animation: messageFadeIn 0.4s ease;
+                animation: messageFadeIn 0.6s ease;
                 position: relative;
+                margin-bottom: 5px;
             }
 
             @keyframes messageFadeIn {
                 from {
                     opacity: 0;
-                    transform: translateY(10px);
+                    transform: translateY(15px) scale(0.95);
                 }
                 to {
                     opacity: 1;
-                    transform: translateY(0);
+                    transform: translateY(0) scale(1);
                 }
             }
 
             .message.own {
                 align-self: flex-end;
+                align-items: flex-end;
             }
 
             .message.other {
                 align-self: flex-start;
+                align-items: flex-start;
             }
 
             .message-username {
                 font-size: 12px;
                 color: var(--imessage-dark-gray);
-                margin: 0 10px 4px;
+                margin: 0 12px 6px;
+                font-weight: 600;
             }
 
             .message.own .message-username {
@@ -390,56 +433,76 @@
             }
 
             .message-bubble {
-                padding: 10px 16px;
-                border-radius: 20px;
-                line-height: 1.5;
+                padding: 12px 18px;
+                border-radius: 22px;
+                line-height: 1.4;
                 font-size: 16px;
                 position: relative;
                 cursor: pointer;
+                transition: all 0.2s ease;
+                max-width: 100%;
+                word-break: break-word;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .message-bubble:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             }
 
             .message.own .message-bubble {
-                background-color: var(--imessage-blue);
+                background: linear-gradient(
+                    135deg,
+                    var(--imessage-blue) 0%,
+                    #0056b3 100%
+                );
                 color: white;
+                border-bottom-right-radius: 8px;
             }
 
             .message.other .message-bubble {
-                background-color: var(--imessage-light-gray);
+                background: var(--imessage-light-gray);
                 color: var(--text-color);
+                border-bottom-left-radius: 8px;
             }
 
             .message-file {
                 display: flex;
                 align-items: center;
                 gap: 12px;
-                padding: 12px 16px;
+                padding: 15px 18px;
                 background: var(--message-bg);
-                border-radius: 12px;
-                border: 1px solid var(--border-color);
+                border-radius: 18px;
+                border: 2px solid var(--border-color);
                 cursor: pointer;
-                transition: background-color 0.2s;
+                transition: all 0.3s ease;
+                max-width: 300px;
             }
 
             .message-file:hover {
                 background: var(--imessage-light-gray);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             }
 
             .file-icon {
-                width: 40px;
-                height: 40px;
-                border-radius: 8px;
+                width: 45px;
+                height: 45px;
+                border-radius: 10px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 18px;
+                font-size: 20px;
                 background: var(--imessage-blue);
                 color: white;
+                flex-shrink: 0;
             }
 
             .file-info h4 {
                 font-size: 14px;
-                font-weight: 500;
-                margin-bottom: 2px;
+                font-weight: 600;
+                margin-bottom: 4px;
+                color: var(--text-color);
             }
 
             .file-info span {
@@ -448,32 +511,40 @@
             }
 
             .message-image {
-                max-width: 250px;
-                border-radius: 12px;
+                max-width: 280px;
+                max-height: 200px;
+                border-radius: 15px;
                 cursor: pointer;
-                transition: transform 0.2s;
+                transition: all 0.3s ease;
+                object-fit: cover;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }
 
             .message-image:hover {
                 transform: scale(1.02);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             }
 
             .message .timestamp {
                 font-size: 11px;
-                color: #ffffff99;
+                color: rgba(255, 255, 255, 0.7);
                 position: absolute;
-                bottom: -16px;
-                right: 8px;
+                bottom: -18px;
+                right: 10px;
                 opacity: 0;
-                transition: opacity 0.3s;
-                text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+                transition: opacity 0.3s ease;
+                font-weight: 500;
+                background: rgba(0, 0, 0, 0.2);
+                padding: 2px 6px;
+                border-radius: 8px;
+                backdrop-filter: blur(5px);
             }
 
             .message.other .timestamp {
                 color: var(--imessage-dark-gray);
-                left: 8px;
+                left: 10px;
                 right: auto;
-                text-shadow: none;
+                background: var(--message-bg);
             }
 
             .message:hover .timestamp {
@@ -483,33 +554,35 @@
             .message-reactions {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 4px;
-                margin-top: 4px;
-                margin-left: 8px;
+                gap: 6px;
+                margin-top: 8px;
+                margin-left: 12px;
             }
 
             .message.own .message-reactions {
                 margin-left: 0;
-                margin-right: 8px;
+                margin-right: 12px;
                 justify-content: flex-end;
             }
 
             .reaction {
                 background: var(--message-bg);
-                border: 1px solid var(--border-color);
-                border-radius: 12px;
-                padding: 2px 6px;
+                border: 2px solid var(--border-color);
+                border-radius: 15px;
+                padding: 4px 8px;
                 font-size: 12px;
                 display: flex;
                 align-items: center;
-                gap: 2px;
+                gap: 4px;
                 cursor: pointer;
-                transition: all 0.2s;
+                transition: all 0.2s ease;
+                font-weight: 600;
             }
 
             .reaction:hover {
                 background: var(--imessage-light-gray);
                 transform: scale(1.1);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }
 
             .reaction.active {
@@ -520,100 +593,136 @@
 
             .reaction-picker {
                 position: absolute;
-                bottom: 100%;
+                bottom: 110%;
+                left: 50%;
+                transform: translateX(-50%);
                 background: var(--background-color);
-                border: 1px solid var(--border-color);
-                border-radius: 12px;
-                padding: 8px;
+                border: 2px solid var(--border-color);
+                border-radius: 25px;
+                padding: 10px 15px;
                 display: none;
                 flex-wrap: wrap;
-                gap: 4px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                z-index: 10;
+                gap: 8px;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+                z-index: 100;
+                backdrop-filter: blur(10px);
             }
 
             .reaction-picker.show {
                 display: flex;
+                animation: reactionPickerShow 0.3s ease;
+            }
+
+            @keyframes reactionPickerShow {
+                from {
+                    opacity: 0;
+                    transform: translateX(-50%) scale(0.8);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(-50%) scale(1);
+                }
             }
 
             .reaction-picker span {
-                font-size: 20px;
-                padding: 4px;
+                font-size: 24px;
+                padding: 8px;
                 cursor: pointer;
-                border-radius: 6px;
-                transition: background-color 0.2s;
+                border-radius: 12px;
+                transition: all 0.2s ease;
             }
 
             .reaction-picker span:hover {
                 background: var(--imessage-light-gray);
+                transform: scale(1.2);
             }
 
             .system-message {
                 text-align: center;
                 color: var(--imessage-dark-gray);
                 font-size: 13px;
-                margin: 16px auto;
-                padding: 6px 12px;
+                margin: 20px auto;
+                padding: 8px 15px;
                 background-color: var(--message-bg);
-                border-radius: 12px;
+                border-radius: 15px;
                 max-width: fit-content;
+                font-weight: 500;
+                border: 1px solid var(--border-color);
+            }
+
+            .privacy-warning {
+                background: rgba(255, 59, 48, 0.1);
+                color: var(--privacy-alert);
+                border: 2px solid var(--privacy-alert);
+                animation: privacyAlert 0.6s ease;
+                font-weight: 600;
             }
 
             .input-area {
                 display: flex;
-                padding: 12px;
+                padding: 15px;
                 background: var(--input-bg);
                 border-top: 1px solid var(--border-color);
                 align-items: flex-end;
                 gap: 12px;
+                backdrop-filter: blur(10px);
             }
 
             .input-controls {
                 display: flex;
                 flex-direction: column;
                 flex: 1;
-                gap: 8px;
+                gap: 10px;
             }
 
             .input-controls input[type="text"] {
                 flex: 1;
-                padding: 10px 18px;
-                border: 1px solid var(--border-color);
-                border-radius: 20px;
+                padding: 12px 20px;
+                border: 2px solid var(--border-color);
+                border-radius: 25px;
                 font-size: 16px;
                 outline: none;
                 font-family: var(--font-family);
                 background: var(--background-color);
                 color: var(--text-color);
-                transition: border-color 0.3s;
+                transition: all 0.3s ease;
+                resize: none;
             }
 
             .input-controls input[type="text"]:focus {
                 border-color: var(--imessage-blue);
+                box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+                transform: translateY(-1px);
             }
 
             .file-upload-area {
                 display: none;
                 flex-wrap: wrap;
-                gap: 8px;
-                padding: 8px 0;
+                gap: 10px;
+                padding: 10px 0;
             }
 
             .file-upload-preview {
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: 10px;
                 background: var(--message-bg);
-                border: 1px solid var(--border-color);
-                border-radius: 8px;
-                padding: 8px;
+                border: 2px solid var(--border-color);
+                border-radius: 12px;
+                padding: 10px;
+                transition: all 0.2s ease;
+            }
+
+            .file-upload-preview:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }
 
             .file-upload-preview img {
-                width: 40px;
-                height: 40px;
+                width: 50px;
+                height: 50px;
                 object-fit: cover;
-                border-radius: 4px;
+                border-radius: 8px;
             }
 
             .file-upload-info {
@@ -621,71 +730,85 @@
             }
 
             .file-upload-info h4 {
-                font-size: 12px;
-                font-weight: 500;
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--text-color);
+                margin-bottom: 2px;
             }
 
             .file-upload-info span {
-                font-size: 10px;
+                font-size: 12px;
                 color: var(--imessage-dark-gray);
             }
 
             .remove-file {
-                background: #ff3b30;
+                background: var(--privacy-alert);
                 color: white;
                 border: none;
                 border-radius: 50%;
-                width: 20px;
-                height: 20px;
-                font-size: 12px;
+                width: 24px;
+                height: 24px;
+                font-size: 14px;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                transition: all 0.2s ease;
+            }
+
+            .remove-file:hover {
+                transform: scale(1.1);
+                background: #d63031;
             }
 
             .input-buttons {
                 display: flex;
                 align-items: flex-end;
-                gap: 8px;
+                gap: 10px;
             }
 
             .file-input-btn,
             .send-button {
-                width: 36px;
-                height: 36px;
+                width: 45px;
+                height: 45px;
                 border: none;
                 border-radius: 50%;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 18px;
-                transition: all 0.2s;
+                font-size: 20px;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }
 
             .file-input-btn {
-                background-color: var(--imessage-light-gray);
+                background: var(--imessage-light-gray);
                 color: var(--imessage-dark-gray);
             }
 
             .file-input-btn:hover {
-                background-color: var(--imessage-dark-gray);
+                background: var(--imessage-dark-gray);
                 color: white;
+                transform: scale(1.1);
             }
 
             .send-button {
-                background-color: var(--imessage-blue);
+                background: linear-gradient(
+                    135deg,
+                    var(--imessage-blue) 0%,
+                    #0056b3 100%
+                );
                 color: white;
             }
 
-            .send-button:hover {
+            .send-button:hover:not(:disabled) {
                 transform: scale(1.1);
+                box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
             }
 
             .send-button:active {
                 transform: scale(0.95);
-                background-color: #0056b3;
             }
 
             .send-button:disabled {
@@ -698,46 +821,137 @@
                 display: none;
             }
 
-            /* Image modal */
+            /* Image Modal */
             .image-modal {
                 position: fixed;
                 top: 0;
                 left: 0;
                 width: 100vw;
                 height: 100vh;
-                background: rgba(0, 0, 0, 0.9);
+                background: rgba(0, 0, 0, 0.95);
                 display: none;
                 justify-content: center;
                 align-items: center;
                 z-index: 1000;
                 padding: 20px;
+                backdrop-filter: blur(5px);
+            }
+
+            .image-modal.show {
+                animation: modalFadeIn 0.3s ease;
+            }
+
+            @keyframes modalFadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
             }
 
             .image-modal img {
                 max-width: 90%;
                 max-height: 90%;
                 object-fit: contain;
-                border-radius: 8px;
+                border-radius: 10px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
             }
 
             .image-modal-close {
                 position: absolute;
-                top: 20px;
-                right: 20px;
+                top: 30px;
+                right: 30px;
                 background: rgba(255, 255, 255, 0.2);
                 color: white;
                 border: none;
                 border-radius: 50%;
-                width: 40px;
-                height: 40px;
-                font-size: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                transition: all 0.2s ease;
+                backdrop-filter: blur(10px);
             }
 
-            /* Responsive adjustments */
+            .image-modal-close:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(1.1);
+            }
+
+            /* Privacy Alert Overlay */
+            .privacy-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(255, 59, 48, 0.95);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+                backdrop-filter: blur(10px);
+            }
+
+            .privacy-overlay.show {
+                animation: privacyOverlayShow 0.5s ease;
+            }
+
+            @keyframes privacyOverlayShow {
+                from {
+                    opacity: 0;
+                    transform: scale(0.8);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            .privacy-overlay-content {
+                background: white;
+                border-radius: 20px;
+                padding: 40px;
+                text-align: center;
+                max-width: 400px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            }
+
+            .privacy-overlay-content h2 {
+                color: var(--privacy-alert);
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .privacy-overlay-content p {
+                color: #333;
+                font-size: 16px;
+                line-height: 1.6;
+                margin-bottom: 20px;
+            }
+
+            .privacy-overlay-content button {
+                background: var(--privacy-alert);
+                color: white;
+                border: none;
+                border-radius: 10px;
+                padding: 12px 25px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .privacy-overlay-content button:hover {
+                background: #d63031;
+                transform: translateY(-1px);
+            }
+
+            /* Responsive Design */
             @media (max-width: 600px) {
                 .container {
                     width: 100vw;
@@ -746,42 +960,39 @@
                     border: none;
                     max-width: none;
                     max-height: none;
-                    box-shadow: none;
                 }
 
                 .header,
-                .login-screen,
-                .chat-container {
-                    padding: 8px !important;
+                .input-area {
+                    padding: 12px;
                 }
 
                 .messages {
-                    padding: 8px !important;
-                    font-size: 15px;
+                    padding: 15px;
                 }
 
-                .login-form,
-                .input-area {
-                    max-width: 100vw;
-                    width: 100vw;
+                .login-screen {
+                    padding: 20px;
                 }
 
-                .login-form input,
-                .login-form button,
-                .input-controls input[type="text"] {
+                .login-form {
+                    max-width: 100%;
+                }
+
+                .message-bubble {
                     font-size: 15px;
-                    padding: 10px 12px;
+                    padding: 10px 15px;
                 }
 
                 .file-input-btn,
                 .send-button {
-                    width: 32px;
-                    height: 32px;
-                    font-size: 16px;
+                    width: 40px;
+                    height: 40px;
+                    font-size: 18px;
                 }
 
                 .header-controls {
-                    right: 8px;
+                    right: 10px;
                 }
 
                 .theme-toggle,
@@ -794,31 +1005,32 @@
 
             @media (max-width: 400px) {
                 .header h1 {
-                    font-size: 14px;
-                }
-
-                .message-bubble {
-                    font-size: 14px;
+                    font-size: 15px;
                 }
 
                 .message {
                     max-width: 85%;
                 }
+
+                .message-bubble {
+                    font-size: 14px;
+                }
             }
 
-            /* Notification styles */
+            /* Notification */
             .notification {
                 position: fixed;
                 top: 20px;
                 right: 20px;
                 background: var(--background-color);
-                border: 1px solid var(--border-color);
-                border-radius: 12px;
-                padding: 16px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                border: 2px solid var(--border-color);
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
                 z-index: 1001;
-                animation: slideIn 0.3s ease;
-                max-width: 300px;
+                animation: slideIn 0.4s ease;
+                max-width: 350px;
+                backdrop-filter: blur(10px);
             }
 
             @keyframes slideIn {
@@ -833,15 +1045,16 @@
             }
 
             .notification h4 {
-                font-size: 14px;
+                font-size: 16px;
                 font-weight: 600;
-                margin-bottom: 4px;
+                margin-bottom: 6px;
                 color: var(--text-color);
             }
 
             .notification p {
-                font-size: 12px;
+                font-size: 14px;
                 color: var(--imessage-dark-gray);
+                line-height: 1.4;
             }
         </style>
     </head>
@@ -877,10 +1090,12 @@
             </div>
 
             <div class="login-screen" id="loginScreen">
-                <h2>Secure Chat</h2>
+                <h2>🔐 Secure Chat</h2>
                 <p>
                     Enter a username and a shared secret key to start your
                     encrypted conversation.
+                    <br /><strong>Privacy Protected:</strong> Screenshots and
+                    recordings are monitored.
                 </p>
                 <form class="login-form" id="loginForm">
                     <input
@@ -897,7 +1112,7 @@
                         placeholder="Shared Secret Key"
                         required
                     />
-                    <button type="submit">Join Chat</button>
+                    <button type="submit">🚀 Join Secure Chat</button>
                 </form>
                 <div
                     id="errorMessage"
@@ -913,7 +1128,7 @@
                         <input
                             type="text"
                             id="messageInput"
-                            placeholder="EF07..."
+                            placeholder="Type your message..."
                             autocomplete="off"
                         />
                         <div class="file-upload-area" id="fileUploadArea"></div>
@@ -946,6 +1161,15 @@
             <img id="imageModalContent" src="" alt="Full size image" />
         </div>
 
+        <!-- Privacy Alert Overlay -->
+        <div class="privacy-overlay" id="privacyOverlay">
+            <div class="privacy-overlay-content">
+                <h2>🚨 Privacy Alert</h2>
+                <p id="privacyMessage">Suspicious activity detected!</p>
+                <button onclick="closePrivacyAlert()">I Understand</button>
+            </div>
+        </div>
+
         <!-- Audio for notifications -->
         <audio id="notificationSound" preload="auto">
             <source
@@ -965,6 +1189,10 @@
             let pendingFiles = [];
             let messageReactions = new Map();
             let lastActivity = Date.now();
+            let privacyAlerts = [];
+            let isDevToolsOpen = false;
+            let screenshotCount = 0;
+            let screenRecordingActive = false;
 
             // DOM Elements
             const loginForm = document.getElementById("loginForm");
@@ -993,12 +1221,228 @@
             const imageModalContent =
                 document.getElementById("imageModalContent");
             const imageModalClose = document.getElementById("imageModalClose");
+            const privacyOverlay = document.getElementById("privacyOverlay");
 
             // Initialize theme
             document.body.setAttribute("data-theme", currentTheme);
             themeToggle.textContent = currentTheme === "dark" ? "☀️" : "🌙";
 
-            // Encryption Functions
+            // Privacy Protection Functions
+            const showPrivacyAlert = (message, type = "warning") => {
+                const privacyMessage =
+                    document.getElementById("privacyMessage");
+                privacyMessage.textContent = message;
+                privacyOverlay.classList.add("show");
+                privacyOverlay.style.display = "flex";
+
+                // Notify other users
+                if (socket && socket.connected) {
+                    socket.emit("privacy_violation", {
+                        type: type,
+                        message: `${currentUser} ${message}`,
+                        timestamp: new Date().toISOString(),
+                    });
+                }
+
+                setTimeout(() => {
+                    privacyOverlay.classList.remove("show");
+                    setTimeout(() => {
+                        privacyOverlay.style.display = "none";
+                    }, 300);
+                }, 3000);
+            };
+
+            const closePrivacyAlert = () => {
+                privacyOverlay.classList.remove("show");
+                setTimeout(() => {
+                    privacyOverlay.style.display = "none";
+                }, 300);
+            };
+
+            // Screenshot Detection
+            const detectScreenshot = () => {
+                let lastVisibilityChange = Date.now();
+
+                document.addEventListener("visibilitychange", () => {
+                    const now = Date.now();
+                    if (document.hidden && now - lastVisibilityChange < 100) {
+                        screenshotCount++;
+                        showPrivacyAlert(
+                            `📸 Screenshot detected! (${screenshotCount})`,
+                            "screenshot",
+                        );
+                        addPrivacyWarning(
+                            "Someone may have taken a screenshot",
+                        );
+                    }
+                    lastVisibilityChange = now;
+                });
+
+                // Keyboard shortcut detection
+                document.addEventListener("keydown", (e) => {
+                    const isScreenshot =
+                        (e.metaKey &&
+                            e.shiftKey &&
+                            (e.key === "3" || e.key === "4")) || // Mac
+                        e.key === "PrintScreen" || // Windows/Linux
+                        (e.altKey && e.key === "PrintScreen") || // Windows Alt+PrtSc
+                        (e.metaKey && e.shiftKey && e.key === "S"); // Some screenshot tools
+
+                    if (isScreenshot) {
+                        e.preventDefault();
+                        screenshotCount++;
+                        showPrivacyAlert(
+                            `📸 Screenshot attempt blocked! (${screenshotCount})`,
+                            "screenshot",
+                        );
+                        addPrivacyWarning(
+                            "Screenshot attempt was detected and blocked",
+                        );
+                    }
+                });
+            };
+
+            // Screen Recording Detection
+            const detectScreenRecording = async () => {
+                try {
+                    // Check for screen capture API usage
+                    if (
+                        navigator.mediaDevices &&
+                        navigator.mediaDevices.getDisplayMedia
+                    ) {
+                        const originalGetDisplayMedia =
+                            navigator.mediaDevices.getDisplayMedia;
+                        navigator.mediaDevices.getDisplayMedia = function (
+                            ...args
+                        ) {
+                            screenRecordingActive = true;
+                            showPrivacyAlert(
+                                "🎥 Screen recording detected!",
+                                "recording",
+                            );
+                            addPrivacyWarning(
+                                "Screen recording activity detected",
+                            );
+                            return originalGetDisplayMedia.apply(this, args);
+                        };
+                    }
+
+                    // Monitor for WebRTC screen sharing
+                    const originalGetUserMedia =
+                        navigator.mediaDevices.getUserMedia;
+                    navigator.mediaDevices.getUserMedia = function (
+                        constraints,
+                    ) {
+                        if (
+                            constraints &&
+                            constraints.video &&
+                            constraints.video.mediaSource
+                        ) {
+                            screenRecordingActive = true;
+                            showPrivacyAlert(
+                                "🎥 Screen capture detected!",
+                                "recording",
+                            );
+                            addPrivacyWarning(
+                                "Screen capture activity detected",
+                            );
+                        }
+                        return originalGetUserMedia.apply(this, arguments);
+                    };
+                } catch (error) {
+                    console.log(
+                        "Screen recording detection setup failed:",
+                        error,
+                    );
+                }
+            };
+
+            // Developer Tools Detection
+            const detectDevTools = () => {
+                setInterval(() => {
+                    const threshold = 160;
+                    const isDevToolsOpen =
+                        window.outerHeight - window.innerHeight > threshold ||
+                        window.outerWidth - window.innerWidth > threshold;
+
+                    if (isDevToolsOpen && !window.isDevToolsAlerted) {
+                        window.isDevToolsAlerted = true;
+                        showPrivacyAlert(
+                            "🛠️ Developer tools detected!",
+                            "devtools",
+                        );
+                        addPrivacyWarning("Developer tools were opened");
+
+                        setTimeout(() => {
+                            window.isDevToolsAlerted = false;
+                        }, 5000);
+                    }
+                }, 1000);
+
+                // Console detection
+                let devtools = { open: false };
+                setInterval(() => {
+                    if (devtools.open) return;
+                    const before = Date.now();
+                    console.clear();
+                    const after = Date.now();
+                    if (after - before > 100) {
+                        devtools.open = true;
+                        showPrivacyAlert(
+                            "🛠️ Console access detected!",
+                            "console",
+                        );
+                        addPrivacyWarning("Browser console was accessed");
+                    }
+                }, 2000);
+            };
+
+            // Copy/Paste Detection
+            const detectCopyPaste = () => {
+                document.addEventListener("copy", (e) => {
+                    if (
+                        messagesContainer.contains(e.target) ||
+                        e.target.closest(".message")
+                    ) {
+                        e.preventDefault();
+                        showPrivacyAlert("📋 Message copying blocked!", "copy");
+                        addPrivacyWarning(
+                            "Attempt to copy message was blocked",
+                        );
+                    }
+                });
+
+                document.addEventListener("paste", (e) => {
+                    if (e.target !== messageInput) {
+                        console.log(
+                            "Paste attempt detected outside message input",
+                        );
+                    }
+                });
+
+                // Disable right-click context menu on messages
+                messagesContainer.addEventListener("contextmenu", (e) => {
+                    if (e.target.closest(".message")) {
+                        e.preventDefault();
+                        showPrivacyAlert(
+                            "🖱️ Context menu blocked on messages!",
+                            "rightclick",
+                        );
+                        addPrivacyWarning("Right-click blocked on message");
+                    }
+                });
+            };
+
+            // Add privacy warning to chat
+            const addPrivacyWarning = (message) => {
+                const warningEl = document.createElement("div");
+                warningEl.classList.add("system-message", "privacy-warning");
+                warningEl.innerHTML = `🔒 Privacy Alert: ${message}`;
+                messagesContainer.appendChild(warningEl);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            };
+
+            // Encryption Functions (Fixed)
             const encryptMessage = (text) => {
                 if (!secretKey) return text;
                 try {
@@ -1034,7 +1478,12 @@
             };
 
             const updateConnectionStatus = (connected) => {
-                connectionStatus.classList.toggle("disconnected", !connected);
+                if (connectionStatus) {
+                    connectionStatus.classList.toggle(
+                        "disconnected",
+                        !connected,
+                    );
+                }
             };
 
             const playNotificationSound = () => {
@@ -1101,8 +1550,14 @@
             const initializeSocket = () => {
                 try {
                     socket = io(window.location.origin, {
-                        timeout: 5000,
-                        transports: ["websocket", "polling"],
+                        timeout: 10000,
+                        transports: ["polling", "websocket"],
+                        forceNew: true,
+                        reconnection: true,
+                        reconnectionDelay: 1000,
+                        reconnectionDelayMax: 5000,
+                        maxReconnectionAttempts: 5,
+                        upgrade: true,
                     });
                     setupSocketEvents();
                 } catch (error) {
@@ -1117,24 +1572,45 @@
                 socket.on("connect", () => {
                     console.log("Connected to server.");
                     updateConnectionStatus(true);
-                    socket.emit("join", {
+                    showNotification(
+                        "Connected",
+                        "Successfully connected to chat server",
+                    );
+
+                    // Join room with retry logic
+                    const joinData = {
                         username: currentUser,
                         secretKey: secretKey,
-                    });
+                    };
+                    socket.emit("join", joinData);
+
+                    // Retry join if no response within 3 seconds
+                    setTimeout(() => {
+                        if (!currentRoom) {
+                            console.log("Retrying join...");
+                            socket.emit("join", joinData);
+                        }
+                    }, 3000);
                 });
 
                 socket.on("disconnect", (reason) => {
                     console.log("Disconnected from server:", reason);
                     updateConnectionStatus(false);
                     addSystemMessage(
-                        "Disconnected from server. Trying to reconnect...",
+                        `Disconnected: ${reason}. Reconnecting...`,
+                    );
+                    showNotification(
+                        "Disconnected",
+                        "Connection lost. Attempting to reconnect...",
                     );
                 });
 
                 socket.on("connect_error", (error) => {
                     console.error("Connection error:", error);
                     updateConnectionStatus(false);
-                    showError("Connection error. Please try again.");
+                    showError(
+                        `Connection failed: ${error.message || "Network error"}. Please check your internet connection.`,
+                    );
                 });
 
                 socket.on("error", (data) => {
@@ -1144,9 +1620,18 @@
 
                 socket.on("join_success", (data) => {
                     currentRoom = data.room;
-                    chatHeader.innerHTML = `Juzer's Chatroom <span class="connection-status" id="connectionStatus"></span>`;
+                    chatHeader.innerHTML = `💕 ${currentUser}'s Secure Chat <span class="connection-status" id="connectionStatus"></span>`;
                     updateUserList(data.users);
                     messageInput.focus();
+
+                    // Update connection status element reference
+                    setTimeout(() => {
+                        const newConnectionStatus =
+                            document.getElementById("connectionStatus");
+                        if (newConnectionStatus) {
+                            updateConnectionStatus(true);
+                        }
+                    }, 100);
                 });
 
                 socket.on("message_history", (messages) => {
@@ -1166,18 +1651,19 @@
                 });
 
                 socket.on("user_joined", (data) => {
-                    addSystemMessage(`${data.username} has joined.`);
+                    addSystemMessage(`${data.username} has joined the chat.`);
                     updateUserList(data.users);
                     playNotificationSound();
                 });
 
                 socket.on("user_left", (data) => {
-                    addSystemMessage(`${data.username} has left.`);
+                    addSystemMessage(`${data.username} has left the chat.`);
                     updateUserList(data.users);
                 });
 
                 socket.on("message", (data) => {
-                    if (data.username !== currentUser) {
+                    // Only display messages from other users
+                    if (data.username && data.username !== currentUser) {
                         const decryptedContent = decryptMessage(data.content);
                         displayMessage(
                             {
@@ -1197,6 +1683,16 @@
                     }
                 });
 
+                socket.on("message_sent", (data) => {
+                    // Update message status for own messages
+                    const messageEl = document.querySelector(
+                        `[data-message-id="${data.id}"]`,
+                    );
+                    if (messageEl) {
+                        messageEl.classList.add("delivered");
+                    }
+                });
+
                 socket.on("user_typing", (data) => {
                     if (data.username !== currentUser) {
                         showTypingIndicator(data.username);
@@ -1212,27 +1708,62 @@
                 socket.on("reaction_update", (data) => {
                     updateMessageReactions(data.messageId, data.reactions);
                 });
+
+                socket.on("privacy_violation", (data) => {
+                    addPrivacyWarning(`${data.message}`);
+                    playNotificationSound();
+                });
             };
 
-            // Message Functions
+            // Message Functions (Fixed)
             const sendMessage = (content, type = "text") => {
-                if (!content || !socket || !socket.connected) return;
+                if (!content || !socket || !socket.connected) {
+                    showError("Not connected to server. Please try again.");
+                    return;
+                }
 
                 updateActivity();
                 const encryptedContent = encryptMessage(content);
+                const messageId = generateMessageId();
                 const messageData = {
+                    id: messageId,
                     content: encryptedContent,
                     type: type,
                 };
 
+                // Display own message immediately with pending status
+                displayMessage(
+                    {
+                        id: messageId,
+                        username: currentUser,
+                        content: content, // Show original content for own messages
+                        type: type,
+                        timestamp: new Date().toISOString(),
+                        reactions: {},
+                        status: "sending",
+                    },
+                    "own",
+                );
+
+                // Send message to server
                 socket.emit("message", messageData);
                 socket.emit("stop_typing");
+            };
+
+            const generateMessageId = () => {
+                return (
+                    Date.now().toString(36) +
+                    Math.random().toString(36).substr(2)
+                );
             };
 
             const displayMessage = (data, type) => {
                 const messageEl = document.createElement("div");
                 messageEl.classList.add("message", type);
-                messageEl.setAttribute("data-message-id", data.id);
+                messageEl.setAttribute(
+                    "data-message-id",
+                    data.id || generateMessageId(),
+                );
 
                 const time = new Date(data.timestamp).toLocaleTimeString([], {
                     hour: "2-digit",
@@ -1246,21 +1777,28 @@
                 let messageContent = "";
 
                 if (data.type === "file") {
-                    const fileData = JSON.parse(data.content);
-                    if (fileData.mimetype.startsWith("image/")) {
-                        messageContent = `<img src="${fileData.url}" class="message-image" alt="${sanitizeHtml(fileData.originalname)}" onclick="openImageModal('${fileData.url}')">`;
-                    } else {
-                        messageContent = `
-                        <div class="message-file" onclick="window.open('${fileData.url}', '_blank')">
-                            <div class="file-icon">${getFileIcon(fileData.mimetype)}</div>
-                            <div class="file-info">
-                                <h4>${sanitizeHtml(fileData.originalname)}</h4>
-                                <span>${formatFileSize(fileData.size)}</span>
-                            </div>
-                        </div>`;
+                    try {
+                        const fileData = JSON.parse(data.content);
+                        if (
+                            fileData.mimetype &&
+                            fileData.mimetype.startsWith("image/")
+                        ) {
+                            messageContent = `<img src="${fileData.url}" class="message-image" alt="${sanitizeHtml(fileData.originalname)}" onclick="openImageModal('${fileData.url}')">`;
+                        } else {
+                            messageContent = `
+                            <div class="message-file" onclick="window.open('${fileData.url}', '_blank')">
+                                <div class="file-icon">${getFileIcon(fileData.mimetype)}</div>
+                                <div class="file-info">
+                                    <h4>${sanitizeHtml(fileData.originalname)}</h4>
+                                    <span>${formatFileSize(fileData.size)}</span>
+                                </div>
+                            </div>`;
+                        }
+                    } catch (e) {
+                        messageContent = `<div class="message-bubble">📁 File attachment</div>`;
                     }
                 } else {
-                    messageContent = `<div class="message-bubble">${sanitizeHtml(data.content)}</div>`;
+                    messageContent = `<div class="message-bubble">${sanitizeHtml(data.content || "")}</div>`;
                 }
 
                 messageEl.innerHTML = `
@@ -1305,7 +1843,7 @@
                     const userNames = users.map((user) =>
                         typeof user === "string" ? user : user.username,
                     );
-                    userList.textContent = `Online: ${userNames.join(", ")}`;
+                    userList.textContent = `💚 Online: ${userNames.join(", ")}`;
                 } else {
                     userList.textContent = "";
                 }
@@ -1358,7 +1896,7 @@
                     };
                     reader.readAsDataURL(file);
                     filePreview =
-                        '<img style="width:40px;height:40px;object-fit:cover;border-radius:4px;">';
+                        '<img style="width:50px;height:50px;object-fit:cover;border-radius:8px;">';
                 }
 
                 preview.innerHTML = `
@@ -1504,13 +2042,17 @@
             // Image Modal Functions
             const openImageModal = (src) => {
                 imageModalContent.src = src;
+                imageModal.classList.add("show");
                 imageModal.style.display = "flex";
                 document.body.style.overflow = "hidden";
             };
 
             const closeImageModal = () => {
-                imageModal.style.display = "none";
-                document.body.style.overflow = "auto";
+                imageModal.classList.remove("show");
+                setTimeout(() => {
+                    imageModal.style.display = "none";
+                    document.body.style.overflow = "auto";
+                }, 300);
             };
 
             // Event Listeners
@@ -1582,10 +2124,8 @@
                 if (socket && socket.connected) {
                     socket.disconnect();
                 }
-                // Try to close the tab
                 window.open("", "_self", "");
                 window.close();
-                // Fallback if close fails
                 setTimeout(() => {
                     window.location.href = "about:blank";
                 }, 500);
@@ -1660,6 +2200,7 @@
                 // Escape to close modals
                 if (e.key === "Escape") {
                     closeImageModal();
+                    closePrivacyAlert();
                     document
                         .querySelectorAll(".reaction-picker.show")
                         .forEach((p) => {
@@ -1675,6 +2216,12 @@
                 }
             });
 
+            // Initialize privacy protection
+            detectScreenshot();
+            detectScreenRecording();
+            detectDevTools();
+            detectCopyPaste();
+
             // Initialize UI
             updateSendButton();
 
@@ -1682,24 +2229,6 @@
             if (usernameInput) {
                 usernameInput.focus();
             }
-
-            // Service Worker for offline support (if needed)
-            if ("serviceWorker" in navigator) {
-                window.addEventListener("load", () => {
-                    // Register service worker if you create one
-                });
-            }
-
-            // Prevent zoom on iOS
-            document.addEventListener(
-                "touchmove",
-                (e) => {
-                    if (e.scale !== 1) {
-                        e.preventDefault();
-                    }
-                },
-                { passive: false },
-            );
 
             // Handle online/offline status
             window.addEventListener("online", () => {
@@ -1717,8 +2246,12 @@
             window.openImageModal = openImageModal;
             window.addReaction = addReaction;
             window.removeFile = removeFile;
+            window.closePrivacyAlert = closePrivacyAlert;
 
-            console.log("🚀 Enhanced Chatroom initialized successfully!");
+            console.log(
+                "🚀 Enhanced Secure Chatroom initialized successfully!",
+            );
+            console.log("🔒 Privacy protection features active");
         </script>
     </body>
 </html>

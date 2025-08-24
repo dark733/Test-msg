@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Test - Secure Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #007aff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .connected { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .disconnected { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .test-section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+
+        input, button {
+            padding: 12px 15px;
+            border: 2px solid #007aff;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        input {
+            background: white;
+            flex: 1;
+        }
+
+        button {
+            background: #007aff;
+            color: white;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            align-items: center;
+        }
+
+        .log {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .clear-btn {
+            background: #dc3545;
+            border-color: #dc3545;
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #007aff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007aff;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Connection Test</h1>
+
+        <div id="connectionStatus" class="status disconnected">
+            ❌ Not Connected
+        </div>
+
+        <div class="test-section">
+            <h3>📡 Connection Info</h3>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="currentUrl">-</div>
+                    <div class="stat-label">Current URL</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="connectionCount">0</div>
+                    <div class="stat-label">Connection Attempts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="messagesSent">0</div>
+                    <div class="stat-label">Messages Sent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="messagesReceived">0</div>
+                    <div class="stat-label">Messages Received</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 Connection Test</h3>
+            <div class="form-group">
+                <input type="text" id="testUsername" placeholder="Enter test username" value="TestUser">
+                <input type="text" id="testSecret" placeholder="Enter secret key" value="test123">
+                <button id="connectBtn" onclick="testConnection()">Connect</button>
+                <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>💬 Message Test</h3>
+            <div class="form-group">
+                <input type="text" id="testMessage" placeholder="Enter test message" value="Hello from connection test!">
+                <button id="sendBtn" onclick="sendTestMessage()" disabled>Send Message</button>
+            </div>
+            <div class="info" id="roomInfo" style="display: none;">
+                <strong>Room:</strong> <span id="currentRoom">-</span><br>
+                <strong>Users:</strong> <span id="currentUsers">-</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Debug Log</h3>
+            <button class="clear-btn" onclick="clearLog()">Clear Log</button>
+            <div id="debugLog" class="log">Waiting for connection test...\n</div>
+        </div>
+
+        <div class="test-section">
+            <h3>ℹ️ Troubleshooting Tips</h3>
+            <div class="info">
+                <strong>For ngrok users:</strong><br>
+                1. Make sure your ngrok tunnel is running: <code>ngrok http 3000</code><br>
+                2. Use the HTTPS URL provided by ngrok<br>
+                3. Both users should use the same ngrok URL<br>
+                4. Check that your server is running on port 3000<br><br>
+                <strong>Common issues:</strong><br>
+                • "Connection failed" - Check if server is running<br>
+                • "Username already taken" - Try a different username or wait<br>
+                • "Network error" - Check internet connection<br>
+                • Messages not appearing - Check encryption key matches
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+        let connectionCount = 0;
+        let messagesSent = 0;
+        let messagesReceived = 0;
+        let currentUser = '';
+        let currentRoom = '';
+
+        // Update UI elements
+        const updateStats = () => {
+            document.getElementById('currentUrl').textContent = window.location.origin;
+            document.getElementById('connectionCount').textContent = connectionCount;
+            document.getElementById('messagesSent').textContent = messagesSent;
+            document.getElementById('messagesReceived').textContent = messagesReceived;
+        };
+
+        const log = (message) => {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEl = document.getElementById('debugLog');
+            logEl.textContent += `[${timestamp}] ${message}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+        };
+
+        const updateConnectionStatus = (connected, message = '') => {
+            const statusEl = document.getElementById('connectionStatus');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const sendBtn = document.getElementById('sendBtn');
+
+            if (connected) {
+                statusEl.className = 'status connected';
+                statusEl.innerHTML = `✅ Connected ${message}`;
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                sendBtn.disabled = false;
+            } else {
+                statusEl.className = 'status disconnected';
+                statusEl.innerHTML = `❌ Disconnected ${message}`;
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                sendBtn.disabled = true;
+            }
+        };
+
+        const testConnection = () => {
+            const username = document.getElementById('testUsername').value.trim();
+            const secretKey = document.getElementById('testSecret').value.trim();
+
+            if (!username || !secretKey) {
+                log('ERROR: Please enter both username and secret key');
+                return;
+            }
+
+            log(`Attempting connection with username: ${username}`);
+            connectionCount++;
+            currentUser = username;
+            updateStats();
+
+            try {
+                // Disconnect existing connection
+                if (socket) {
+                    socket.disconnect();
+                }
+
+                log('Creating socket connection...');
+                socket = io(window.location.origin, {
+                    timeout: 10000,
+                    transports: ['polling', 'websocket'],
+                    forceNew: true,
+                    reconnection: true,
+                    reconnectionDelay: 1000,
+                    reconnectionDelayMax: 5000,
+                    maxReconnectionAttempts: 3
+                });
+
+                socket.on('connect', () => {
+                    log(`Socket connected with ID: ${socket.id}`);
+                    updateConnectionStatus(true, `(ID: ${socket.id.substring(0, 8)}...)`);
+
+                    // Join room
+                    log('Joining room...');
+                    socket.emit('join', {
+                        username: username,
+                        secretKey: secretKey
+                    });
+                });
+
+                socket.on('connect_error', (error) => {
+                    log(`Connection error: ${error.message || error}`);
+                    updateConnectionStatus(false, '- Connection failed');
+                });
+
+                socket.on('disconnect', (reason) => {
+                    log(`Disconnected: ${reason}`);
+                    updateConnectionStatus(false, `- ${reason}`);
+                });
+
+                socket.on('error', (data) => {
+                    log(`Server error: ${data.message || data}`);
+                });
+
+                socket.on('join_success', (data) => {
+                    log(`Successfully joined room: ${data.room}`);
+                    currentRoom = data.room;
+
+                    // Update room info
+                    document.getElementById('roomInfo').style.display = 'block';
+                    document.getElementById('currentRoom').textContent = data.room;
+                    document.getElementById('currentUsers').textContent = data.users.map(u => u.username || u).join(', ');
+                });
+
+                socket.on('user_joined', (data) => {
+                    log(`User joined: ${data.username}`);
+                    document.getElementById('currentUsers').textContent = data.users.map(u => u.username || u).join(', ');
+                });
+
+                socket.on('user_left', (data) => {
+                    log(`User left: ${data.username}`);
+                    document.getElementById('currentUsers').textContent = data.users.map(u => u.username || u).join(', ');
+                });
+
+                socket.on('message', (data) => {
+                    messagesReceived++;
+                    updateStats();
+                    log(`Message received from ${data.username}: ${data.content.substring(0, 50)}${data.content.length > 50 ? '...' : ''}`);
+                });
+
+                socket.on('message_sent', (data) => {
+                    log(`Message sent confirmation: ${data.id}`);
+                });
+
+                socket.on('user_typing', (data) => {
+                    log(`${data.username} is typing...`);
+                });
+
+                socket.on('privacy_violation', (data) => {
+                    log(`Privacy alert: ${data.message}`);
+                });
+
+            } catch (error) {
+                log(`Exception during connection: ${error.message}`);
+                updateConnectionStatus(false, '- Exception occurred');
+            }
+        };
+
+        const disconnect = () => {
+            if (socket) {
+                log('Disconnecting...');
+                socket.disconnect();
+                socket = null;
+            }
+            document.getElementById('roomInfo').style.display = 'none';
+        };
+
+        const sendTestMessage = () => {
+            const message = document.getElementById('testMessage').value.trim();
+
+            if (!message) {
+                log('ERROR: Please enter a message');
+                return;
+            }
+
+            if (!socket || !socket.connected) {
+                log('ERROR: Not connected to server');
+                return;
+            }
+
+            log(`Sending message: ${message}`);
+            messagesSent++;
+            updateStats();
+
+            socket.emit('message', {
+                content: message,  // Send plain text for testing
+                type: 'text'
+            });
+
+            document.getElementById('testMessage').value = '';
+        };
+
+        const clearLog = () => {
+            document.getElementById('debugLog').textContent = '';
+        };
+
+        // Initialize
+        updateStats();
+        log('Connection test page loaded');
+        log(`Current URL: ${window.location.origin}`);
+
+        // Test if ngrok
+        if (window.location.hostname.includes('ngrok')) {
+            log('✅ Detected ngrok URL - good for external access');
+        } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            log('⚠️  Local URL detected - only accessible on this machine');
+        }
+
+        // Auto-fill username with random ID for testing
+        document.getElementById('testUsername').value = 'TestUser' + Math.floor(Math.random() * 1000);
+
+        // Enter key support
+        document.getElementById('testMessage').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendTestMessage();
+            }
+        });
+
+        // Page unload cleanup
+        window.addEventListener('beforeunload', () => {
+            if (socket) {
+                socket.disconnect();
+            }
+        });
+    </script>
+</body>
+</html>

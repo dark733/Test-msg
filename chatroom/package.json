@@ -1,14 +1,42 @@
 {
-  "name": "temporary-chatroom",
-  "version": "1.0.0",
-  "description": "A temporary, iMessage-themed chatroom application.",
+  "name": "secure-chatroom",
+  "version": "2.0.0",
+  "description": "A secure, privacy-focused chatroom with iMessage-style design, featuring screenshot detection, file sharing, and end-to-end encryption. Perfect for couples and private conversations.",
   "main": "server.js",
+  "keywords": [
+    "chat",
+    "secure",
+    "privacy",
+    "encryption",
+    "imessage",
+    "realtime",
+    "couples"
+  ],
+  "author": "Enhanced Chatroom",
+  "license": "MIT",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js",
+    "debug": "NODE_ENV=development DEBUG=socket.io* node server.js",
+    "test": "node server.js & sleep 2 && curl -f http://localhost:3000/test.html && pkill -f 'node server.js'",
+    "ngrok": "echo '🚀 Starting server...' && node server.js & sleep 3 && echo '📡 Starting ngrok tunnel...' && ngrok http 3000",
+    "clean": "rm -rf uploads/* && echo '🧹 Cleaned upload directory'"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   },
   "dependencies": {
     "express": "^4.19.2",
     "socket.io": "^4.7.5",
     "multer": "^1.4.5-lts.1"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/secure-chatroom.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/secure-chatroom/issues"
+  },
+  "homepage": "https://github.com/your-username/secure-chatroom#readme"
 }

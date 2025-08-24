@@ -11,8 +11,14 @@ const io = socketIo(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
+    allowedHeaders: ["*"],
+    credentials: false,
   },
   maxHttpBufferSize: 10e6, // 10MB for file uploads
+  transports: ["websocket", "polling"],
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000,
 });
 
 // Enhanced data structures
@@ -66,6 +72,21 @@ const upload = multer({
 // Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(uploadsDir));
+
+// Add CORS middleware
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept",
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  if (req.method === "OPTIONS") {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
 // File upload endpoint
 app.post("/upload", upload.single("file"), (req, res) => {
@@ -160,15 +181,16 @@ io.on("connection", (socket) => {
         return;
       }
 
-      // Check if username already exists in the room
-      if (
-        rooms[secretKey] &&
-        rooms[secretKey].some((user) => user.username === username)
-      ) {
-        socket.emit("error", {
-          message: "Username already taken in this room",
-        });
-        return;
+      // Check if username already exists in the room (allow reconnections)
+      if (rooms[secretKey]) {
+        const existingUserIndex = rooms[secretKey].findIndex(
+          (user) => user.username === username,
+        );
+        if (existingUserIndex !== -1) {
+          // Remove old connection for this username
+          rooms[secretKey].splice(existingUserIndex, 1);
+          console.log(`Reconnecting user: ${username}`);
+        }
       }
 
       socket.join(secretKey);
@@ -256,8 +278,14 @@ io.on("connection", (socket) => {
       // Save message to history
       saveMessage(socket.room, messageData);
 
-      // Broadcast to room
-      io.to(socket.room).emit("message", messageData);
+      // Broadcast to room (excluding sender)
+      socket.to(socket.room).emit("message", messageData);
+
+      // Send confirmation back to sender with message ID
+      socket.emit("message_sent", {
+        id: messageData.id,
+        status: "delivered",
+      });
     } catch (error) {
       console.error("Message error:", error);
       socket.emit("error", { message: "Failed to send message" });
@@ -340,6 +368,34 @@ io.on("connection", (socket) => {
     updateUserLastSeen(socket.id);
   });
 
+  socket.on("privacy_violation", (data) => {
+    try {
+      if (!socket.room || !socket.username) {
+        return;
+      }
+
+      const { type, message } = data;
+
+      if (!type || !message) {
+        return;
+      }
+
+      updateUserLastSeen(socket.id);
+
+      // Broadcast privacy violation to other users in the room
+      socket.to(socket.room).emit("privacy_violation", {
+        type: type,
+        message: message,
+        timestamp: new Date().toISOString(),
+        violator: socket.username,
+      });
+
+      console.log(`Privacy violation in room ${socket.room}: ${message}`);
+    } catch (error) {
+      console.error("Privacy violation error:", error);
+    }
+  });
+
   socket.on("disconnect", (reason) => {
     try {
       console.log(`User disconnected: ${socket.id}, reason: ${reason}`);
@@ -366,14 +422,15 @@ io.on("connection", (socket) => {
           // Clean up empty room
           if (rooms[socket.room].length === 0) {
             delete rooms[socket.room];
-            // Clean up message history for empty rooms after 5 minutes
+            // Clean up message history for empty rooms after 1 minute
             setTimeout(
               () => {
                 if (!rooms[socket.room] || rooms[socket.room].length === 0) {
                   delete messageHistory[socket.room];
+                  console.log(`Cleaned up room: ${socket.room}`);
                 }
               },
-              5 * 60 * 1000,
+              1 * 60 * 1000,
             );
           }
         }
@@ -422,9 +479,23 @@ process.on("unhandledRejection", (reason, promise) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Secure chatroom server running on port ${PORT}`);
   console.log(`📱 Local access: http://localhost:${PORT}`);
+  console.log(`🌐 Network access: http://0.0.0.0:${PORT}`);
+  console.log(`📡 For ngrok: ngrok http ${PORT}`);
+
+  // Log active rooms every 30 seconds
+  setInterval(() => {
+    const roomCount = Object.keys(rooms).length;
+    const totalUsers = Object.values(rooms).reduce(
+      (sum, room) => sum + room.length,
+      0,
+    );
+    if (roomCount > 0) {
+      console.log(`📊 Active rooms: ${roomCount}, Total users: ${totalUsers}`);
+    }
+  }, 30000);
 });
 
 // Graceful shutdown
